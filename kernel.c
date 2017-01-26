@@ -47,6 +47,12 @@ size_t strlen(const char* str) {
 	return len;
 }
 
+void linecpy(uint16_t* to, const uint16_t* from, size_t len) {
+	for(size_t col = 0; col < len; ++col) {
+		to[col] = from[col];
+	}
+}
+
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
 
@@ -60,8 +66,8 @@ void terminal_initialize(void) {
 	terminal_column = 0;
 	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	terminal_buffer = (uint16_t*) 0xB8000;
-	for (size_t y = 0; y < VGA_HEIGHT; y++) {
-		for (size_t x = 0; x < VGA_WIDTH; x++) {
+	for (size_t y = 0; y < VGA_HEIGHT; ++y) {
+		for (size_t x = 0; x < VGA_WIDTH; ++x) {
 			const size_t index = y * VGA_WIDTH + x;
 			terminal_buffer[index] = vga_entry(' ', terminal_color);
 		}
@@ -77,23 +83,33 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 	terminal_buffer[index] = vga_entry(c, color);
 }
 
+void terminal_scroll() {
+	--terminal_row;
+	for(size_t row = 1; row < VGA_HEIGHT; ++row) {
+		linecpy(&terminal_buffer[(row-1) * VGA_WIDTH], &terminal_buffer[row * VGA_WIDTH], VGA_WIDTH);
+	}
+	for(size_t col = 0; col < VGA_WIDTH; ++col) {
+		terminal_putentryat(' ', terminal_color, col, VGA_HEIGHT - 1);
+	}
+}
+
 void terminal_putchar(char c) {
 	if(c == '\n') {
 		terminal_column = 0;
 		if (++terminal_row == VGA_HEIGHT)
-			terminal_row = 0;
+			terminal_scroll();
 	} else {
 		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 		if (++terminal_column == VGA_WIDTH) {
 			terminal_column = 0;
 			if (++terminal_row == VGA_HEIGHT)
-				terminal_row = 0;
+				terminal_scroll();
 		}
 	}
 }
 
 void terminal_write(const char* data, size_t size) {
-	for (size_t i = 0; i < size; i++)
+	for (size_t i = 0; i < size; ++i)
 		terminal_putchar(data[i]);
 }
 
@@ -102,9 +118,11 @@ void terminal_writestring(const char* data) {
 }
 
 void kernel_main(void) {
-	/* Initialize terminal interface */
 	terminal_initialize();
 
-	/* Newline support is left as an exercise. */
-	terminal_writestring("Hello, kernel World!\n");
+	for(int i = 'A'; i <= 'Z'; ++i) {
+		terminal_writestring("Hello, kernel World! ");
+		terminal_putchar((char)i);
+		terminal_putchar('\n');
+	}
 }
