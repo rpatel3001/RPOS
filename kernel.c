@@ -125,4 +125,11 @@ void kernel_main(void) {
 		terminal_putchar((char)i);
 		terminal_putchar('\n');
 	}
+
+	for(int i = 0; i < 16; ++i) {
+		for(int j = 0; j < 16; ++j) {
+			terminal_setcolor(vga_entry_color(j, i));
+			terminal_putchar('X');
+		}
+	}
 }
