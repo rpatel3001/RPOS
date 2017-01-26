@@ -5,3 +5,8 @@ Building a modest and minimalist, but hopefully functionally complete operating 
 #Environment Setup
 
 1. follow the instructions in `crosscompiler/`
+
+#Build and Run
+
+1. run ./clean.sh to remove build artifacts
+2. run ./qemu to build and boot in qemu
