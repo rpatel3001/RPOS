@@ -1,5 +1,7 @@
 #Build instructions
 
+full instructions [here](http://wiki.osdev.org/GCC_Cross-Compiler)
+
 1. download latest binutils and gcc source
 2. do this:
 
