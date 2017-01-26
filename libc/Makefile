@@ -13,10 +13,7 @@ EXEC_PREFIX?=$(PREFIX)
 INCLUDEDIR?=$(PREFIX)/include
 LIBDIR?=$(EXEC_PREFIX)/lib
 
-WARNINGS := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-			-Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
-			-Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
-			-Wuninitialized -Wconversion
+WARNINGS := -Werror -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wuninitialized
 
 CFLAGS:=$(CFLAGS) -ffreestanding $(WARNINGS)
 CPPFLAGS:=$(CPPFLAGS) -D__is_libc -Iinclude

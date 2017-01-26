@@ -2,8 +2,6 @@
 set -e
 . ./build.sh
 
-mkdir -p isodir
-mkdir -p isodir/boot
 mkdir -p isodir/boot/grub
 
 cp sysroot/boot/rpos.kernel isodir/boot/rpos.kernel

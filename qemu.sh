@@ -2,4 +2,4 @@
 set -e
 . ./iso.sh
 
-qemu-system-$(./target-triplet-to-arch.sh $HOST) -cdrom rpos.iso
+qemu-system-$(./target-triplet-to-arch.sh $HOST) -cdrom rpos.iso 2> /dev/null
