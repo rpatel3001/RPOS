@@ -48,7 +48,7 @@ size_t strlen(const char* str) {
 }
 
 void linecpy(uint16_t* to, const uint16_t* from, size_t len) {
-	for(size_t col = 0; col < len; ++col) {
+	for (size_t col = 0; col < len; ++col) {
 		to[col] = from[col];
 	}
 }
@@ -85,22 +85,44 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 
 void terminal_scroll() {
 	--terminal_row;
-	for(size_t row = 1; row < VGA_HEIGHT; ++row) {
+	for (size_t row = 1; row < VGA_HEIGHT; ++row) {
 		linecpy(&terminal_buffer[(row-1) * VGA_WIDTH], &terminal_buffer[row * VGA_WIDTH], VGA_WIDTH);
 	}
-	for(size_t col = 0; col < VGA_WIDTH; ++col) {
+	for (size_t col = 0; col < VGA_WIDTH; ++col) {
 		terminal_putentryat(' ', terminal_color, col, VGA_HEIGHT - 1);
 	}
 }
 
 void terminal_putchar(char c) {
-	if(c == '\r') {
-		terminal_column = 0;
-	} else if(c == '\n') {
+	const size_t index = terminal_row * VGA_WIDTH + terminal_column;
+	if ((c >= 0 && c <= 6) || (c == 11) || (c >= 14 && c <= 31)) {
+		//nonprintable
+	} else if (c == 7) {
+		//bell
+	} else if (c == 8) {
+		//backspace
+		if (terminal_column != 0) {
+			--terminal_column;
+			linecpy(&terminal_buffer[index], &terminal_buffer[index+1], index - index / VGA_WIDTH * terminal_row);
+		}
+	} else if (c == 9) {
+		//tab
+		for(; terminal_column % 8 != 0;) {
+			terminal_putchar(' ');
+		}
+	} else if (c == 10) {
+		//newline
 		terminal_column = 0;
 		if (++terminal_row == VGA_HEIGHT)
 			terminal_scroll();
+	} else if (c == 12) {
+		//form feed
+		terminal_initialize();
+	} else if (c == 13) {
+		//carriage return
+		terminal_column = 0;
 	} else {
+		//printable character
 		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 		if (++terminal_column == VGA_WIDTH) {
 			terminal_column = 0;
@@ -122,11 +144,11 @@ void terminal_writestring(const char* data) {
 void kernel_main(void) {
 	terminal_initialize();
 
-	for(int i = 'A'; i <= 'Z'; ++i) {
+	for (int i = 'A'; i <= 'Z'; ++i) {
 		terminal_writestring("Hello, kernel World! ");
 		terminal_putchar((char)i);
-		terminal_putchar('\n');
+		terminal_writestring("\n");
 	}
 	terminal_writestring("Hello, kernel World!\r");
-	terminal_writestring("Blech");
+	terminal_writestring("Blech\bk\nbye\tkern\na\tb\tc\nasdfagfdsfgvd\tfdfeac");
 }
