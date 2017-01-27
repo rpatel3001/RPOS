@@ -2,8 +2,6 @@
    designated as the entry point. */
 ENTRY(_start)
 
-/* Tell where the various sections of the object files will be put in the final
-   kernel image. */
 SECTIONS
 {
 	/* Begin putting sections at 1 MiB, a conventional place for kernels to be
