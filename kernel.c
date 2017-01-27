@@ -207,7 +207,7 @@ void terminal_putchar(char c) {
 		//backspace
 		if (terminal_column != 0) {
 			--terminal_column;
-			linecpy(&terminal_buffer[index], &terminal_buffer[index+1], index - index / VGA_WIDTH * terminal_row);
+			linecpy(&terminal_buffer[index-1], &terminal_buffer[index], index - index / VGA_WIDTH * terminal_row);
 		}
 	} else if (c == 9) {
 		//tab
@@ -229,7 +229,7 @@ void terminal_putchar(char c) {
 		//delete
 		if (terminal_column != 0) {
 			--terminal_column;
-			linecpy(&terminal_buffer[index-1], &terminal_buffer[index], index - index / VGA_WIDTH * terminal_row);
+			linecpy(&terminal_buffer[index], &terminal_buffer[index+1], index - index / VGA_WIDTH * terminal_row);
 		}
 	} else {
 		//printable character
