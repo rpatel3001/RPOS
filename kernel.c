@@ -1,4 +1,4 @@
-#include <stdbool.h> /* C doesn't have booleans by default. */
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -94,7 +94,9 @@ void terminal_scroll() {
 }
 
 void terminal_putchar(char c) {
-	if(c == '\n') {
+	if(c == '\r') {
+		terminal_column = 0;
+	} else if(c == '\n') {
 		terminal_column = 0;
 		if (++terminal_row == VGA_HEIGHT)
 			terminal_scroll();
@@ -125,11 +127,6 @@ void kernel_main(void) {
 		terminal_putchar((char)i);
 		terminal_putchar('\n');
 	}
-
-	for(int i = 0; i < 16; ++i) {
-		for(int j = 0; j < 16; ++j) {
-			terminal_setcolor(vga_entry_color(j, i));
-			terminal_putchar('X');
-		}
-	}
+	terminal_writestring("Hello, kernel World!\r");
+	terminal_writestring("Blech");
 }
