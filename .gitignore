@@ -1,5 +1,2 @@
 *.o
 *.bin
-*.iso
-isodir
-sysroot
