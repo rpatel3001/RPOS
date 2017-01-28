@@ -1,4 +1,7 @@
+#include <stddef.h>
+#include <stdint.h>
 #include "keyboard_map.h"
+#include "keyboard.h"
 
 extern void keyboard_handler(void);
 extern char read_port(unsigned short port);
