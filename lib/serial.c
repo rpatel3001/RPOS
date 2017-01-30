@@ -3,11 +3,13 @@
 #include <serial.h>
 
 extern size_t strlen(const char* str);
+
 extern uint8_t read_port(uint16_t port);
 extern void write_port(uint16_t port, uint8_t data);
 
 #define PORT 0x3f8
 
+//initialize serial output
 void serial_init(void) {
    write_port(PORT + 1, 0x00);    // Disable all interrupts
    write_port(PORT + 3, 0x80);    // Enable DLAB (set baud rate divisor)
@@ -18,15 +20,18 @@ void serial_init(void) {
    write_port(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
 }
 
+//write a number of characters to serial
 void serial_write(const char* data, size_t size) {
   for (size_t i = 0; i < size; ++i)
     serial_putchar(data[i]);
 }
 
+//write a null terminated string to serial
 void serial_writestring(const char* data) {
   serial_write(data, strlen(data));
 }
 
+//write one characetr to serial
 void serial_putchar(char c) {
   write_port(PORT, c);
 }

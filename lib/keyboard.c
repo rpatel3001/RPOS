@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <terminal.h>
 #include "keyboard_map.h"
 #include "keyboard.h"
 
@@ -7,7 +8,7 @@ extern void keyboard_handler(void);
 extern uint8_t read_port(uint16_t port);
 extern void write_port(uint16_t port, uint8_t data);
 extern void load_idt(uint32_t *idt_ptr);
-extern void terminal_putchar(char c);
+
 #define KEYBOARD_DATA_PORT 0x60
 #define KEYBOARD_STATUS_PORT 0x64
 #define IDT_SIZE 256
@@ -28,13 +29,10 @@ void keyboard_handler_main(void) {
   }
 }
 
+//initialize the keyboard
 void kb_init(void) {
   /* 0xFD is 11111101 - enables only IRQ1 (keyboard)*/
   write_port(0x21 , read_port(0x21) & 0xFD);
-
-  //ensure the keyboard is using scancode set 2
-  write_port(KEYBOARD_DATA_PORT, 0xF0);
-  write_port(KEYBOARD_DATA_PORT, 0x2);
 }
 
 struct IDT_entry {
@@ -47,6 +45,7 @@ struct IDT_entry {
 
 struct IDT_entry IDT[IDT_SIZE];
 
+//initialize the IDT
 void idt_init(void) {
   uint32_t keyboard_address;
   uint32_t idt_address;
