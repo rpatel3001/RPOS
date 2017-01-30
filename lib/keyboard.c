@@ -12,6 +12,7 @@ extern void load_idt(uint32_t *idt_ptr);
 #define KEYBOARD_DATA_PORT 0x60
 #define KEYBOARD_STATUS_PORT 0x64
 #define IDT_SIZE 256
+
 void keyboard_handler_main(void) {
   uint8_t status;
   uint8_t keycode;

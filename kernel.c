@@ -21,17 +21,7 @@ void linecpy(uint16_t* to, const uint16_t* from, size_t len) {
 void kernel_main(void) {
 	terminal_init();
 	serial_init();
-	serial_writestring("\n\n");
-
-	for (int i = 'A'; i <= 'Z'; ++i) {
-		terminal_writestring("Hello, kernel World! ");
-		terminal_putchar((char)i);
-		terminal_putchar('\n');
-		serial_putchar((char)i);
-		serial_putchar('\n');
-	}
-	terminal_writestring("Hello, kernel World!\r");
-	terminal_writestring("Blech\bk\nbye\tkern\na\tb\tc\nasdfagfdsfgvd\tfdfeac");
+	serial_writestring("\n");
 
 	idt_init();
 	kb_init();
