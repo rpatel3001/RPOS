@@ -20,7 +20,7 @@ boot.o: boot.asm
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 boot:
-	qemu-system-i386 -kernel rpos.bin 2> /dev/null
+	qemu-system-i386 -kernel rpos.bin -serial stdio 
 
 clean:
 	find . -name '*.o' -delete
