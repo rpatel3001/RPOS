@@ -36,9 +36,6 @@ void terminal_setfgcolor(enum vga_color fg);
 //set the background color
 void terminal_setbgcolor(enum vga_color bg);
 
-//write a null terminated string
-void terminal_writestring(const char* data);
-
 //put a character at a specific location onscreen
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y);
 
@@ -47,5 +44,14 @@ void terminal_putchar(char c);
 
 //write a given number of characters
 void terminal_write(const char* data, size_t size);
+
+//write a null terminated string
+void terminal_writestring(const char* data);
+
+//write an integer with radix 10
+void terminal_writeint10(int32_t data);
+
+//write an integer with radix 16
+void terminal_writeint16(uint32_t data);
 
 #endif

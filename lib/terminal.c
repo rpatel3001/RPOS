@@ -1,10 +1,10 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
 #include "terminal.h"
 
 extern void write_port(uint16_t port, uint8_t data);
-extern size_t strlen(const char* str);
-extern void linecpy(uint16_t* to, const uint16_t* from, size_t len);
 
 //give a vga buffer value for a character and color combo
 static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
@@ -81,7 +81,7 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 void terminal_scroll() {
 	--terminal_row;
 	for (size_t row = 1; row < VGA_HEIGHT; ++row) {
-		linecpy(&terminal_buffer[(row-1) * VGA_WIDTH], &terminal_buffer[row * VGA_WIDTH], VGA_WIDTH);
+		memcpy(&terminal_buffer[(row-1) * VGA_WIDTH], &terminal_buffer[row * VGA_WIDTH], VGA_WIDTH);
 	}
 	for (size_t col = 0; col < VGA_WIDTH; ++col) {
 		terminal_putentryat(' ', terminal_color, col, VGA_HEIGHT - 1);
@@ -99,7 +99,7 @@ void terminal_putchar(char c) {
 		//backspace
 		if (terminal_column != 0) {
 			--terminal_column;
-			linecpy(&terminal_buffer[index-1], &terminal_buffer[index], index - index / VGA_WIDTH * terminal_row);
+			memcpy(&terminal_buffer[index-1], &terminal_buffer[index], index - index / VGA_WIDTH * terminal_row);
 		}
 	} else if (c == 9) {
 		//tab
@@ -121,7 +121,7 @@ void terminal_putchar(char c) {
 		//delete
 		if (terminal_column != 0) {
 			--terminal_column;
-			linecpy(&terminal_buffer[index], &terminal_buffer[index+1], index - index / VGA_WIDTH * terminal_row);
+			memcpy(&terminal_buffer[index], &terminal_buffer[index+1], index - index / VGA_WIDTH * terminal_row);
 		}
 	} else {
 		//printable character
@@ -144,4 +144,67 @@ void terminal_write(const char* data, size_t size) {
 //write a null terminated string
 void terminal_writestring(const char* data) {
 	terminal_write(data, strlen(data));
+}
+
+//write an integer with radix 10
+void terminal_writeint10(int32_t data) {
+	if (!data) {
+		terminal_putchar('0');
+	} else {
+		bool neg = data < 0;
+		if (neg) {
+			data = -data;
+		}
+		char buf[12];
+		size_t index = 11;
+		buf[index] = 0;
+		while (data) {
+			buf[--index] = data % 10 + '0';
+			data /= 10;
+		}
+		if (neg) {
+			buf[--index] = '-';
+		}
+		terminal_writestring(buf + index);
+	}
+}
+
+char nibbleToHex(uint8_t c) {
+  switch(c) {
+    case 0: return '0';
+    case 1: return '1';
+    case 2: return '2';
+    case 3: return '3';
+    case 4: return '4';
+    case 5: return '5';
+    case 6: return '6';
+    case 7: return '7';
+    case 8: return '8';
+    case 9: return '9';
+    case 10: return 'A';
+    case 11: return 'B';
+    case 12: return 'C';
+    case 13: return 'D';
+    case 14: return 'E';
+    case 15: return 'F';
+    default: return '?';
+  }
+}
+
+//write an integer with radix 16
+void terminal_writeint16(uint32_t data) {
+  if (!data) {
+    terminal_writestring("0x00");
+  } else {
+    char buf[11];
+    size_t index = 10;
+    buf[index] = 0;
+    for(int i = 0; i < 8 && (data || index % 2 == 1); ++i) {
+      buf[--index] = nibbleToHex(data & 0xF);
+      data >>= 4;
+    }
+    buf[--index] = 'x';
+    buf[--index] = '0';
+    terminal_writestring(buf + index);
+  }
 }
