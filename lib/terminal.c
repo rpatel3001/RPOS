@@ -18,7 +18,7 @@ size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
 
-void update_cursor(int row, int col) {
+static void update_cursor(int row, int col) {
 	size_t index=(row * VGA_WIDTH) + col;
 
 	// cursor LOW port to vga INDEX register
@@ -67,7 +67,7 @@ enum vga_color terminal_getfgcolor(void) {
 }
 
 //get the background color
-enum vga_color terminal_getbgcolor(void ) {
+enum vga_color terminal_getbgcolor(void) {
 	return terminal_color >> 4;
 }
 
@@ -169,42 +169,42 @@ void terminal_writeint10(int32_t data) {
 	}
 }
 
-char nibbleToHex(uint8_t c) {
-  switch(c) {
-    case 0: return '0';
-    case 1: return '1';
-    case 2: return '2';
-    case 3: return '3';
-    case 4: return '4';
-    case 5: return '5';
-    case 6: return '6';
-    case 7: return '7';
-    case 8: return '8';
-    case 9: return '9';
-    case 10: return 'A';
-    case 11: return 'B';
-    case 12: return 'C';
-    case 13: return 'D';
-    case 14: return 'E';
-    case 15: return 'F';
-    default: return '?';
-  }
+static char nibbleToHex(uint8_t c) {
+	switch (c) {
+	case 0: return '0';
+	case 1: return '1';
+	case 2: return '2';
+	case 3: return '3';
+	case 4: return '4';
+	case 5: return '5';
+	case 6: return '6';
+	case 7: return '7';
+	case 8: return '8';
+	case 9: return '9';
+	case 10: return 'A';
+	case 11: return 'B';
+	case 12: return 'C';
+	case 13: return 'D';
+	case 14: return 'E';
+	case 15: return 'F';
+	default: return '?';
+	}
 }
 
 //write an integer with radix 16
 void terminal_writeint16(uint32_t data) {
-  if (!data) {
-    terminal_writestring("0x00");
-  } else {
-    char buf[11];
-    size_t index = 10;
-    buf[index] = 0;
-    for(int i = 0; i < 8 && (data || index % 2 == 1); ++i) {
-      buf[--index] = nibbleToHex(data & 0xF);
-      data >>= 4;
-    }
-    buf[--index] = 'x';
-    buf[--index] = '0';
-    terminal_writestring(buf + index);
-  }
+	if (!data) {
+		terminal_writestring("0x00");
+	} else {
+		char buf[11];
+		size_t index = 10;
+		buf[index] = 0;
+		for (int i = 0; i < 8 && (data || index % 2 == 1); ++i) {
+			buf[--index] = nibbleToHex(data & 0xF);
+			data >>= 4;
+		}
+		buf[--index] = 'x';
+		buf[--index] = '0';
+		terminal_writestring(buf + index);
+	}
 }

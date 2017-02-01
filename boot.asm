@@ -38,6 +38,65 @@ stack_top:
 ; Declare _start as a function symbol with the given symbol size.
 section .text
 
+global get_eax:function
+get_eax:
+	ret
+
+global get_ebx:function
+get_ebx:
+	push ebx
+	mov eax, ebx
+	pop ebx
+	ret
+
+global get_ecx:function
+get_ecx:
+	push ecx
+	mov eax, ecx
+	pop ecx
+	ret
+
+global get_edx:function
+get_edx:
+	push edx
+	mov eax, edx
+	pop edx
+	ret
+
+global get_esi:function
+get_esi:
+	push esi
+	mov eax, esi
+	pop esi
+	ret
+
+global get_edi:function
+get_edi:
+	push edi
+	mov eax, edi
+	pop edi
+	ret
+
+global get_ebp:function
+get_ebp:
+	push ebp
+	mov eax, ebp
+	pop ebp
+	ret
+
+global get_esp:function
+get_esp:
+	push esp
+	mov eax, esp
+	pop esp
+	ret
+
+global get_flags:function
+get_flags:
+	pushfd
+	pop eax
+	ret
+
 global read_port:function
 read_port:
 	mov edx, [esp + 4]
@@ -86,6 +145,7 @@ _start:
 	; Enter the high-level kernel. The ABI requires the stack is 16-byte
 	; aligned at the time of the call instruction (which afterwards pushes
 	; the return pointer of size 4 bytes).
+
 	extern kernel_main
 	call kernel_main
 
