@@ -15,6 +15,12 @@ extern int get_edi(void);
 extern int get_ebp(void);
 extern int get_esp(void);
 extern int get_flags(void);
+extern int get_ss(void);
+extern int get_cs(void);
+extern int get_ds(void);
+extern int get_es(void);
+extern int get_fs(void);
+extern int get_gs(void);
 
 void kernel_printregisters(void) {
 	serial_writestring("eax:\t");
@@ -35,6 +41,18 @@ void kernel_printregisters(void) {
 	serial_writeint16(get_esp());
 	serial_writestring("\nflags:\t");
 	serial_writeint16(get_flags());
+	serial_writestring("\nss:\t");
+	serial_writeint16(get_ss());
+	serial_writestring("\ncs:\t");
+	serial_writeint16(get_cs());
+	serial_writestring("\nds:\t");
+	serial_writeint16(get_ds());
+	serial_writestring("\nes:\t");
+	serial_writeint16(get_es());
+	serial_writestring("\nfs:\t");
+	serial_writeint16(get_fs());
+	serial_writestring("\ngs:\t");
+	serial_writeint16(get_gs());
 	serial_writestring("\n");
 }
 
@@ -46,7 +64,7 @@ void kernel_handlechar(char c) {
 	if (c == '\n' || line_index == VGA_WIDTH) {
 		serial_writestring(linebuffer);
 		memset(linebuffer, 0, VGA_WIDTH);
-		if(line_index == VGA_WIDTH) {
+		if (line_index == VGA_WIDTH) {
 			serial_putchar('\n');
 		}
 		line_index = 0;
@@ -66,5 +84,6 @@ void kernel_main(void) {
 		terminal_putchar('\n');
 	}
 	kernel_printregisters();
+	serial_putchar('\n');
 	while (1);
 }

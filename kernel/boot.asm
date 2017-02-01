@@ -45,55 +45,84 @@ get_eax:
 global get_ebx:function
 get_ebx:
 	push ebx
-	mov eax, ebx
-	pop ebx
+	pop eax
 	ret
 
 global get_ecx:function
 get_ecx:
 	push ecx
-	mov eax, ecx
-	pop ecx
+	pop eax
 	ret
 
 global get_edx:function
 get_edx:
 	push edx
-	mov eax, edx
-	pop edx
+	pop eax
 	ret
 
 global get_esi:function
 get_esi:
 	push esi
-	mov eax, esi
-	pop esi
+	pop eax
 	ret
 
 global get_edi:function
 get_edi:
 	push edi
-	mov eax, edi
-	pop edi
+	pop eax
 	ret
 
 global get_ebp:function
 get_ebp:
 	push ebp
-	mov eax, ebp
-	pop ebp
+	pop eax
 	ret
 
 global get_esp:function
 get_esp:
 	push esp
-	mov eax, esp
-	pop esp
+	pop eax
 	ret
 
 global get_flags:function
 get_flags:
 	pushfd
+	pop eax
+	ret
+
+global get_ss:function
+get_ss:
+	push ss
+	pop eax
+	ret
+
+global get_cs:function
+get_cs:
+	push cs
+	pop eax
+	ret
+
+global get_ds:function
+get_ds:
+	push ds
+	pop eax
+	ret
+
+global get_es:function
+get_es:
+	push es
+	pop eax
+	ret
+
+global get_fs:function
+get_fs:
+	push fs
+	pop eax
+	ret
+
+global get_gs:function
+get_gs:
+	push gs
 	pop eax
 	ret
 

@@ -1,6 +1,5 @@
 #include <stddef.h>
 #include <stdint.h>
-#include <terminal.h>
 #include "keyboard_map.h"
 #include "keyboard.h"
 

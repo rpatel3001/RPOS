@@ -68,7 +68,7 @@ enum vga_color terminal_getfgcolor(void) {
 
 //get the background color
 enum vga_color terminal_getbgcolor(void) {
-	return terminal_color >> 4;
+	return (terminal_color >> 4) & 0x0F;
 }
 
 //put a character at a specific location onscreen
@@ -80,9 +80,7 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 //scroll up the terminal by one line
 void terminal_scroll() {
 	--terminal_row;
-	for (size_t row = 1; row < VGA_HEIGHT; ++row) {
-		memcpy(&terminal_buffer[(row-1) * VGA_WIDTH], &terminal_buffer[row * VGA_WIDTH], VGA_WIDTH);
-	}
+	memcpy(terminal_buffer, terminal_buffer + VGA_WIDTH, VGA_WIDTH * (VGA_HEIGHT - 1));
 	for (size_t col = 0; col < VGA_WIDTH; ++col) {
 		terminal_putentryat(' ', terminal_color, col, VGA_HEIGHT - 1);
 	}
