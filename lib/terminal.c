@@ -80,7 +80,7 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 //scroll up the terminal by one line
 void terminal_scroll() {
 	--terminal_row;
-	memcpy(terminal_buffer, terminal_buffer + VGA_WIDTH, VGA_WIDTH * (VGA_HEIGHT - 1));
+	memcpy(terminal_buffer, terminal_buffer + VGA_WIDTH, 2 * VGA_WIDTH * (VGA_HEIGHT - 1));
 	for (size_t col = 0; col < VGA_WIDTH; ++col) {
 		terminal_putentryat(' ', terminal_color, col, VGA_HEIGHT - 1);
 	}
