@@ -44,10 +44,12 @@ void kernel_handlechar(char c) {
 	terminal_putchar(c);
 	linebuffer[line_index++] = c;
 	if (c == '\n' || line_index == VGA_WIDTH) {
-		line_index = 0;
 		serial_writestring(linebuffer);
-		serial_putchar('\n');
 		memset(linebuffer, 0, VGA_WIDTH);
+		if(line_index == VGA_WIDTH) {
+			serial_putchar('\n');
+		}
+		line_index = 0;
 	}
 }
 
