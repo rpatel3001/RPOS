@@ -1,6 +1,9 @@
 #include <stddef.h>
 #include <stdint.h>
-#include "keyboard_map.h"
+#include <stdbool.h>
+#include <string.h>
+#include "keyboard_keymap.h"
+#include "keyboard_scancodes.h"
 #include "keyboard.h"
 
 extern void keyboard_handler(void);
@@ -12,27 +15,116 @@ extern void load_idt(uint32_t *idt_ptr);
 #define KEYBOARD_STATUS_PORT 0x64
 #define IDT_SIZE 256
 
-void (*callback)(char);
+void (*callback)(uint8_t);
+bool super_down = false;
+bool shift_down = false;
+bool control_down = false;
+bool alt_down = false;
+
+uint8_t scan_to_vk(uint8_t scan[]) {
+	uint8_t pause[] = {0xe1, 0x1d, 0x45, 0xe1, 0x9d, 0xc5};
+	uint8_t controlpause[] = {0xe0, 0x46, 0xe0, 0xc6, 0x00, 0x00};
+
+	if (!memcmp(scan, pause, 6)) {
+		// pause
+		return 0;
+	} else if (!memcmp(scan, controlpause, 6)) {
+		// control+pause
+		return 0;
+	}
+
+	for (int i = 0; i < 6; i += 2) {
+		if (scan[i] == 0 && scan[i+1] == 0) break;
+
+		bool escaped = scan[i] == 0xE0;
+		uint8_t code = escaped ? scan[i + 1] : scan[i];
+		bool downevent = !(0x80 & code);
+
+		uint8_t modifier = 0;
+		if (shift_down) modifier += 1;
+		if (control_down) modifier += 2;
+		if (alt_down) modifier += 4;
+
+		switch (code) {
+		case SCAN_ALT:
+			alt_down = downevent;
+			break;
+		case SCAN_LEFTSHIFT:
+		case SCAN_RIGHTSHIFT:
+			if (!escaped) shift_down = downevent;
+			break;
+		case SCAN_LEFTSUPER:
+		case SCAN_RIGHTSUPER:
+			if (escaped) super_down = downevent;
+			break;
+		case SCAN_CONTROL:
+			control_down = downevent;
+			break;
+		case SCAN_SCROLLLOCK:
+			if (escaped) ; //control break
+			else //scroll lock
+				break;
+		case SCAN_ESCAPE:
+		case SCAN_PRINTSCREEN:
+		case SCAN_CAPSLOCK:
+		case SCAN_HOME:
+		case SCAN_PAGEUP:
+		case SCAN_GRAYCENTER:
+		case SCAN_END:
+		case SCAN_PAGEDOWN:
+		case SCAN_INSERT:
+		case SCAN_DELETE:
+		case SCAN_F1:
+		case SCAN_F2:
+		case SCAN_F3:
+		case SCAN_F4:
+		case SCAN_F5:
+		case SCAN_F6:
+		case SCAN_F7:
+		case SCAN_F8:
+		case SCAN_F9:
+		case SCAN_F10:
+			break;
+		case SCAN_ERROR1:
+		case SCAN_BATOK:
+		case SCAN_ECHO:
+		case SCAN_ACK:
+		case SCAN_BATERROR:
+		case SCAN_INTERNALFAIL:
+		case SCAN_RESEND:
+		case SCAN_ERROR2:
+			break;
+		default:
+			return keymap[code][modifier];
+		}
+	}
+	return 0;
+}
 
 void keyboard_handler_main(void) {
-	uint8_t status;
-	uint8_t keycode;
+	uint8_t scancode[6];
+	size_t index = 0;
+
+	memset(scancode, 0, 6);
 
 	/* write EOI */
 	write_port(0x20, 0x20);
 
-	status = read_port(KEYBOARD_STATUS_PORT);
+	uint8_t status = read_port(KEYBOARD_STATUS_PORT);
 	/* Lowest bit of status will be set if buffer is not empty */
-	if (status & 0x01) {
-		keycode = read_port(KEYBOARD_DATA_PORT);
-		if (keycode > 127)
-			return;
-		callback(keyboard_map[keycode]);
+	while (index < 6 && status & 0x01) {
+		scancode[index++] = read_port(KEYBOARD_DATA_PORT);
+		status = read_port(KEYBOARD_STATUS_PORT);
 	}
+	if (!scancode[0]) {
+		return;
+	}
+	uint8_t vk = scan_to_vk(scancode);
+	callback(vk);
 }
 
 //initialize the keyboard
-void kb_init(void (*handler)(char)) {
+void kb_init(void (*handler)(uint8_t)) {
 	/* 0xFD is 11111101 - enables only IRQ1 (keyboard)*/
 	write_port(0x21 , read_port(0x21) & 0xFD);
 	callback = handler;

@@ -10,4 +10,7 @@ void memcpy(void* dest, const void* orig, size_t len);
 //set a chunk of memory to a single value
 void memset(void* dest, char value, size_t len);
 
+//compare two chunks of memory
+uint8_t memcmp(const void* buf1, const void* buf2, size_t len);
+
 #endif

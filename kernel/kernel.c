@@ -58,7 +58,9 @@ void kernel_printregisters(void) {
 
 char linebuffer[VGA_WIDTH+1];
 size_t line_index = 0;
-void kernel_handlechar(char c) {
+void kernel_handlechar(uint8_t c) {
+	if (c == 0) return;
+
 	terminal_putchar(c);
 	linebuffer[line_index++] = c;
 	if (c == '\n' || line_index == VGA_WIDTH) {
@@ -72,9 +74,9 @@ void kernel_handlechar(char c) {
 }
 
 void kernel_main(void) {
-	terminal_init();
 	serial_init();
 	serial_writestring("\n");
+	terminal_init();
 
 	idt_init();
 	kb_init(&kernel_handlechar);

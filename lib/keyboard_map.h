@@ -1,135 +1,112 @@
-/* The following array is taken from
-    http://0xwww.osdever.net/bkerndev/Docs/keyboard.htm
-   All credits where due
-*/
+//mostly taken from here https://msdn.microsoft.com/en-us/library/aa299374
 
-unsigned char keyboard_map[128] = {
-	0, //0x00, error
-	0, //0x01, escape
-	'1', //0x02, 1
-	'2', //0x03, 2
-	'3', //0x04, 3
-	'4', //0x05, 4
-	'5', //0x06, 5
-	'6', //0x07, 6
-	'7', //0x08, 7
-	'8', //0x09, 8
-	'9', //0x0A, 9
-	'0', //0x0B, 0
-	'-', //0x0C, -
-	'=', //0x0D, =
-	'\b', //0x0E, backspace
-	'\t', //0x0F, tab
-	'q', //0x10, q
-	'w', //0x11, w
-	'e', //0x12, e
-	'r', //0x13, r
-	't', //0x14, t
-	'y', //0x15, y
-	'u', //0x16, u
-	'i', //0x17, i
-	'o', //0x18, o
-	'p', //0x19, p
-	'[', //0x1A, [
-	']', //0x1B, ]
-	'\n', //0x1C, enter
-	0, //0x1D, left ctrl
-	'a', //0x1E, a
-	's', //0x1F, s
-	'd', //0x20, d
-	'f', //0x21, f
-	'g', //0x22, g
-	'h', //0x23, h
-	'j', //0x24, j
-	'k', //0x25, k
-	'l', //0x26, l
-	';', //0x27, ;
-	'\'', //0x28, '
-	'`', //0x29, `
-	0, //0x2A, left shift
-	'\\', //0x2B, "\"
-	'z', //0x2C, z
-	'x', //0x2D, x
-	'c', //0x2E, c
-	'v', //0x2F, v
-	'b', //0x30, b
-	'n', //0x31, n
-	'm', //0x32, m
-	',', //0x33, ,
-	'.', //0x34, .
-	'/', //0x35, /
-	0, //0x36, right shift
-	0, //0x37, printscreen
-	0, //0x38, left alt
-	' ', //0x39, space
-	0, //0x3A, caps lock
-	0, //0x3B, f1
-	0, //0x3C, f2
-	0, //0x3D, f3
-	0, //0x3E, f4
-	0, //0x3F, f5
-	0, //0x40, f6
-	0, //0x41, f7
-	0, //0x42, f8
-	0, //0x43, f9
-	0, //0x44, f10
-	0, //0x45, num lock
-	0, //0x46, scroll lock
-	0, //0x47, home
-	0, //0x48, up
-	0, //0x49, page up
-	'-', //0x4A, -
-	0, //0x4B, left
-	0, //0x4C, center
-	0, //0x4D, right
-	'+', //0x4E, +
-	0, //0x4F, end
-	0, //0x50, down
-	0, //0x51, page down
-	0, //0x52, insert
-	0, //0x53, delete
-	0, //0x54,
-	0, //0x55, function
-	0, //0x56, super
-	0, //0x57, f11
-	0, //0x58, f12
-	0, //0x59,
-	0, //0x5A,
-	0, //0x5B,
-	0, //0x5C,
-	0, //0x5D,
-	0, //0x5E,
-	0, //0x5F,
-	0, //0x60,
-	0, //0x61,
-	0, //0x62,
-	0, //0x63,
-	0, //0x64,
-	0, //0x65,
-	0, //0x66,
-	0, //0x67,
-	0, //0x68,
-	0, //0x69,
-	0, //0x6A,
-	0, //0x6B,
-	0, //0x6C,
-	0, //0x6D,
-	0, //0x6E,
-	0, //0x6F,
-	0, //0x70,
-	0, //0x71,
-	0, //0x72,
-	0, //0x73,
-	0, //0x74,
-	0, //0x75,
-	0, //0x76,
-	0, //0x77,
-	0, //0x78,
-	0, //0x79,
-	0, //0x7A,
-	0, //0x7B,
-	0, //0x7C,
-	0, //0x7D,
-	0, //0x7E,
-	0, //0x7F,
-};
+//keyboard scancode set 2
+
+#define SCAN_ERROR	0x00
+#define SCAN_ESCAPE	0x01
+#define SCAN_1	0x02
+#define SCAN_2	0x03
+#define SCAN_3	0x04
+#define SCAN_4	0x05
+#define SCAN_5	0x06
+#define SCAN_6	0x07
+#define SCAN_7	0x08
+#define SCAN_8	0x09
+#define SCAN_9	0x0A
+#define SCAN_0	0x0B
+#define SCAN_MINUS	0x0C
+#define SCAN_EQUALS	0x0D
+#define SCAN_BACKSPACE	0x0E
+#define SCAN_TAB	0x0F
+#define SCAN_Q	0x10
+#define SCAN_W	0x11
+#define SCAN_E	0x12
+#define SCAN_R	0x13
+#define SCAN_T	0x14
+#define SCAN_Y	0x15
+#define SCAN_U	0x16
+#define SCAN_I	0x17
+#define SCAN_O	0x18
+#define SCAN_P	0x19
+#define SCAN_LEFTSQUARE	0x1A
+#define SCAN_RIGHTSQUARE	0x1B
+#define SCAN_ENTER	0x1C
+#define SCAN_CONTROL	0x1D
+#define SCAN_A	0x1E
+#define SCAN_S	0x1F
+#define SCAN_D	0x20
+#define SCAN_F	0x21
+#define SCAN_G	0x22
+#define SCAN_H	0x23
+#define SCAN_J	0x24
+#define SCAN_K	0x25
+#define SCAN_L	0x26
+#define SCAN_SEMICOLON	0x27
+#define SCAN_SINGLEQUOTE	0x28
+#define SCAN_BACKTICK	0x29
+#define SCAN_LEFTSHIFT	0x2A
+#define SCAN_BACKSLASH	0x2B
+#define SCAN_Z	0x2C
+#define SCAN_X	0x2D
+#define SCAN_C	0x2E
+#define SCAN_V	0x2F
+#define SCAN_B	0x30
+#define SCAN_N	0x31
+#define SCAN_M	0x32
+#define SCAN_COMMA	0x33
+#define SCAN_PERIOD	0x34
+#define SCAN_SLASH	0x35
+#define SCAN_RIGHTSHIFT	0x36
+#define SCAN_PRINTSCREEN	0x37
+#define SCAN_ALT	0x38
+#define SCAN_SPACE	0x39
+#define SCAN_CAPSLOCK	0x3A
+#define SCAN_F1	0x3B
+#define SCAN_F2	0x3C
+#define SCAN_F3	0x3D
+#define SCAN_F4	0x3E
+#define SCAN_F5	0x3F
+#define SCAN_F6	0x40
+#define SCAN_F7	0x41
+#define SCAN_F8	0x42
+#define SCAN_F9	0x43
+#define SCAN_F10	0x44
+#define SCAN_NUMLOCK	0x45
+#define SCAN_SCROLLLOCK	0x46
+#define SCAN_HOME	0x47
+#define SCAN_UP	0x48
+#define SCAN_PAGEUP	0x49
+#define SCAN_GRAYMINUS	0x4A
+#define SCAN_LEFTARROW	0x4B
+#define SCAN_GRAY5	0x4C
+#define SCAN_RIGHTARROW	0x4D
+#define SCAN_GRAYPLUS	0x4E
+#define SCAN_END	0x4F
+#define SCAN_DOWNARROW	0x50
+#define SCAN_PAGEDOWN	0x51
+#define SCAN_INSERT	0x52
+#define SCAN_DELETE	0x53
+
+//escaped scancodes
+
+#define SCAN_ESC_RIGHTCONTROL 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00
+#define SCAN_ESC_ 0x00

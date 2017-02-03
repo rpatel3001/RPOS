@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdint.h>
 
 #include "string.h"
 
@@ -22,4 +23,14 @@ void memset(void* dest, char val, size_t len) {
 	for (size_t i = 0; i < len; ++i) {
 		((char*)dest)[i] = val;
 	}
+}
+
+//compare two chunks of memory
+uint8_t memcmp(const void* buf1, const void* buf2, size_t len) {
+	for (size_t i = 0; i < len; ++i) {
+		if (((uint8_t*)buf1)[i] != ((uint8_t*)buf2)[i]) {
+			return ((uint8_t*)buf1)[i] - ((uint8_t*)buf2)[i];
+		}
+	}
+	return 0;
 }
