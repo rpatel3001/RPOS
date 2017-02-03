@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include "keyboard_keymap.h"
+#include <serial.h>
 #include "keyboard_scancodes.h"
 #include "keyboard.h"
 
@@ -15,22 +15,27 @@ extern void load_idt(uint32_t *idt_ptr);
 #define KEYBOARD_STATUS_PORT 0x64
 #define IDT_SIZE 256
 
-void (*callback)(uint8_t);
+void (*callback)(key_press);
+
+static const key_press invalid_keypress = {false, false, false, false, false, 0};
+
 bool super_down = false;
 bool shift_down = false;
 bool control_down = false;
 bool alt_down = false;
+bool capslock_down = false;
+bool function_down = false;
 
-uint8_t scan_to_vk(uint8_t scan[]) {
+key_press scan_to_vk(uint8_t scan[]) {
 	uint8_t pause[] = {0xe1, 0x1d, 0x45, 0xe1, 0x9d, 0xc5};
 	uint8_t controlpause[] = {0xe0, 0x46, 0xe0, 0xc6, 0x00, 0x00};
 
 	if (!memcmp(scan, pause, 6)) {
 		// pause
-		return 0;
+		return invalid_keypress;
 	} else if (!memcmp(scan, controlpause, 6)) {
 		// control+pause
-		return 0;
+		return invalid_keypress;
 	}
 
 	for (int i = 0; i < 6; i += 2) {
@@ -40,33 +45,44 @@ uint8_t scan_to_vk(uint8_t scan[]) {
 		uint8_t code = escaped ? scan[i + 1] : scan[i];
 		bool downevent = !(0x80 & code);
 
-		uint8_t modifier = 0;
-		if (shift_down) modifier += 1;
-		if (control_down) modifier += 2;
-		if (alt_down) modifier += 4;
+		if (!downevent) {
+			code &= 0x7F;
+		}
 
 		switch (code) {
+		//handle modifiers
 		case SCAN_ALT:
 			alt_down = downevent;
 			break;
 		case SCAN_LEFTSHIFT:
 		case SCAN_RIGHTSHIFT:
-			if (!escaped) shift_down = downevent;
+			if (!escaped) {
+				shift_down = downevent;
+			}
 			break;
 		case SCAN_LEFTSUPER:
 		case SCAN_RIGHTSUPER:
-			if (escaped) super_down = downevent;
+			if (escaped) {
+				super_down = downevent;
+			}
 			break;
 		case SCAN_CONTROL:
 			control_down = downevent;
 			break;
 		case SCAN_SCROLLLOCK:
-			if (escaped) ; //control break
-			else //scroll lock
-				break;
+			if (escaped) {
+				//control+break
+			} else {
+				//scroll lock
+			}
+			break;
+		case SCAN_CAPSLOCK:
+			if (downevent) {
+				capslock_down = !capslock_down;
+			}
+			break;
 		case SCAN_ESCAPE:
 		case SCAN_PRINTSCREEN:
-		case SCAN_CAPSLOCK:
 		case SCAN_HOME:
 		case SCAN_PAGEUP:
 		case SCAN_GRAYCENTER:
@@ -95,10 +111,31 @@ uint8_t scan_to_vk(uint8_t scan[]) {
 		case SCAN_ERROR2:
 			break;
 		default:
-			return keymap[code][modifier];
+			if (downevent) {
+				key_press ret = {
+					.shift = (!capslock_down && shift_down)
+					|| (capslock_down && !shift_down),
+					.control = control_down,
+					.alt = alt_down,
+					.super = super_down,
+					.function = function_down,
+					.keycode = code
+				};
+				return ret;
+			}
 		}
 	}
-	return 0;
+	return invalid_keypress;
+}
+
+//return if a key is invalid;
+static bool is_valid_key(key_press kp) {
+	return kp.shift != false ||
+	       kp.alt != false ||
+	       kp.control != false ||
+	       kp.super != false ||
+	       kp.function != false ||
+	       kp.keycode != 0;
 }
 
 void keyboard_handler_main(void) {
@@ -119,12 +156,15 @@ void keyboard_handler_main(void) {
 	if (!scancode[0]) {
 		return;
 	}
-	uint8_t vk = scan_to_vk(scancode);
-	callback(vk);
+
+	key_press vk = scan_to_vk(scancode);
+	if (is_valid_key(vk)) {
+		callback(vk);
+	}
 }
 
 //initialize the keyboard
-void kb_init(void (*handler)(uint8_t)) {
+void kb_init(void (*handler)(key_press)) {
 	/* 0xFD is 11111101 - enables only IRQ1 (keyboard)*/
 	write_port(0x21 , read_port(0x21) & 0xFD);
 	callback = handler;
