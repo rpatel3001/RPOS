@@ -8,7 +8,7 @@
 // 3 - shift + control
 // 4 - alt
 // 5 - alt + shift
-// 6 - alt + shift+ control
+// 6 - alt + shift + control
 // 7 - alt + control
 uint8_t keymap[84][8] = {
 	{  0,     0,    0,    0,    0,    0,    0,    0},    // 0x00,

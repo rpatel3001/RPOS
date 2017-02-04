@@ -10,10 +10,13 @@ LIB_C_OBJ:=$(patsubst %.c,%.c.o,$(LIB_C_SRC))
 LIB_ASM_OBJ:=$(patsubst %.asm,%.asm.o,$(LIB_ASM_SRC))
 LIBOBJ:=$(LIB_C_OBJ) $(LIB_ASM_OBJ)
 
-a:
-	echo $(LIB_C_SRC)
+all: rpos.iso
 
-all: rpos.bin
+rpos.iso: rpos.bin
+	mkdir -p isodir/boot/grub
+	cp rpos.bin isodir/boot/rpos.bin
+	cp grub.cfg isodir/boot/grub/grub.cfg
+	grub-mkrescue -o rpos.iso isodir
 
 rpos.bin: $(LIBOBJ)
 	$(CC) $(CFLAGS) -nostdlib -lgcc -T linker.ld -o rpos.bin $(LIBOBJ)
@@ -26,8 +29,10 @@ rpos.bin: $(LIBOBJ)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 boot:
-	qemu-system-i386 -kernel rpos.bin -serial stdio 
+	qemu-system-i386 -cdrom rpos.iso -serial stdio
 
 clean:
 	find . -name '*.o' -delete
 	-rm *.bin
+	-rm -rf isodir
+	-rm rpos.iso

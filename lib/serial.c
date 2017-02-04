@@ -19,6 +19,7 @@ void serial_init(void) {
 	write_port(PORT + 3, 0x03);    // 8 bits, no parity, one stop bit
 	write_port(PORT + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
 	write_port(PORT + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+	serial_writestring("serial initialized\n");
 }
 
 //write a number of characters to serial

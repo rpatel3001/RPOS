@@ -52,11 +52,13 @@ key_press scan_to_vk(uint8_t scan[]) {
 		switch (code) {
 		//handle modifiers
 		case SCAN_ALT:
+			//left key if not escaped
 			alt_down = downevent;
 			break;
 		case SCAN_LEFTSHIFT:
 		case SCAN_RIGHTSHIFT:
 			if (!escaped) {
+				//not a fake event
 				shift_down = downevent;
 			}
 			break;
@@ -67,6 +69,7 @@ key_press scan_to_vk(uint8_t scan[]) {
 			}
 			break;
 		case SCAN_CONTROL:
+			//left key if not escaped
 			control_down = downevent;
 			break;
 		case SCAN_SCROLLLOCK:
@@ -81,15 +84,19 @@ key_press scan_to_vk(uint8_t scan[]) {
 				capslock_down = !capslock_down;
 			}
 			break;
-		case SCAN_ESCAPE:
 		case SCAN_PRINTSCREEN:
+			if (escaped) {
+				//control + printscreen
+			}
+			break;
+		//will get around to these eventually
+		case SCAN_ESCAPE:
 		case SCAN_HOME:
 		case SCAN_PAGEUP:
 		case SCAN_GRAYCENTER:
 		case SCAN_END:
 		case SCAN_PAGEDOWN:
 		case SCAN_INSERT:
-		case SCAN_DELETE:
 		case SCAN_F1:
 		case SCAN_F2:
 		case SCAN_F3:
@@ -101,6 +108,7 @@ key_press scan_to_vk(uint8_t scan[]) {
 		case SCAN_F9:
 		case SCAN_F10:
 			break;
+		//not keypresses, keyboard status codes
 		case SCAN_ERROR1:
 		case SCAN_BATOK:
 		case SCAN_ECHO:
@@ -168,6 +176,7 @@ void kb_init(void (*handler)(key_press)) {
 	/* 0xFD is 11111101 - enables only IRQ1 (keyboard)*/
 	write_port(0x21 , read_port(0x21) & 0xFD);
 	callback = handler;
+	serial_writestring("keyboard initialized\n");
 }
 
 struct IDT_entry {
@@ -179,7 +188,7 @@ struct IDT_entry {
 };
 
 struct IDT_entry IDT[IDT_SIZE];
-
+extern int get_cs(void);
 //initialize the IDT
 void idt_init(void) {
 	uint32_t keyboard_address;
@@ -189,7 +198,7 @@ void idt_init(void) {
 	/* populate IDT entry of keyboard's interrupt */
 	keyboard_address = (uint32_t)keyboard_handler;
 	IDT[0x21].offset_lowerbits = keyboard_address & 0xffff;
-	IDT[0x21].selector = 0x08; /* KERNEL_CODE_SEGMENT_OFFSET */
+	IDT[0x21].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
 	IDT[0x21].zero = 0;
 	IDT[0x21].type_attr = 0x8e; /* INTERRUPT_GATE */
 	IDT[0x21].offset_higherbits = (keyboard_address & 0xffff0000) >> 16;
@@ -232,4 +241,5 @@ void idt_init(void) {
 	idt_ptr[1] = idt_address >> 16 ;
 
 	load_idt(idt_ptr);
+	serial_writestring("interrrupts initialized\n");
 }

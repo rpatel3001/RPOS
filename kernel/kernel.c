@@ -7,21 +7,21 @@
 #include <serial.h>
 #include <string.h>
 
-extern int get_eax(void);
-extern int get_ebx(void);
-extern int get_ecx(void);
-extern int get_edx(void);
-extern int get_esi(void);
-extern int get_edi(void);
-extern int get_ebp(void);
-extern int get_esp(void);
-extern int get_flags(void);
-extern int get_ss(void);
-extern int get_cs(void);
-extern int get_ds(void);
-extern int get_es(void);
-extern int get_fs(void);
-extern int get_gs(void);
+extern uint32_t get_eax(void);
+extern uint32_t get_ebx(void);
+extern uint32_t get_ecx(void);
+extern uint32_t get_edx(void);
+extern uint32_t get_esi(void);
+extern uint32_t get_edi(void);
+extern uint32_t get_ebp(void);
+extern uint32_t get_esp(void);
+extern uint32_t get_flags(void);
+extern uint32_t get_ss(void);
+extern uint32_t get_cs(void);
+extern uint32_t get_ds(void);
+extern uint32_t get_es(void);
+extern uint32_t get_fs(void);
+extern uint32_t get_gs(void);
 
 void kernel_printregisters(void) {
 	serial_writestring("  eax:\t");
@@ -86,9 +86,7 @@ void kernel_handlechar(key_press kp) {
 
 void kernel_main(void) {
 	serial_init();
-	serial_writestring("\n");
 	terminal_init();
-
 	idt_init();
 	kb_init(&kernel_handlechar);
 
@@ -96,7 +94,5 @@ void kernel_main(void) {
 		terminal_writeint16(i);
 		terminal_putchar('\n');
 	}
-	kernel_printregisters();
-	serial_putchar('\n');
 	while (1);
 }

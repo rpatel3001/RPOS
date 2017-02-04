@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <serial.h>
 #include "terminal.h"
 
 extern void write_port(uint16_t port, uint8_t data);
@@ -42,6 +43,7 @@ void terminal_init(void) {
 			terminal_buffer[index] = vga_entry(' ', terminal_color);
 		}
 	}
+	serial_writestring("terminal initialized\n");
 }
 
 //set the background and foreground color
@@ -118,7 +120,6 @@ void terminal_putchar(char c) {
 	} else if (c == 127) {
 		//delete
 		if (terminal_column != 0) {
-			--terminal_column;
 			memcpy(&terminal_buffer[index], &terminal_buffer[index+1], index - index / VGA_WIDTH * terminal_row);
 		}
 	} else {
