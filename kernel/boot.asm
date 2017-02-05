@@ -126,10 +126,6 @@ get_gs:
 	pop eax
 	ret
 
-get_eip: 
-	mov eax, [esp]
-	ret
-
 global read_port:function
 read_port:
 	mov edx, [esp + 4]
