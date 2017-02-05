@@ -1,6 +1,8 @@
 #ifndef _KEYBOARD_H
 #define _KEYBOARD_H
 
+#include <stdbool.h>
+
 // struct to represent a keypress event
 typedef struct key_press {
 	bool shift;
@@ -13,8 +15,5 @@ typedef struct key_press {
 
 //initialize the keyboard
 void kb_init(void (*callback)(key_press));
-
-//initialize the IDT
-void idt_init(void);
 
 #endif

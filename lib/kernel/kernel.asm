@@ -66,6 +66,6 @@ longmode_supported:
 	jz .no_longmode
 	mov eax, 1
 	ret
-.no_longmode
+.no_longmode:
 	mov eax, 0
 	ret

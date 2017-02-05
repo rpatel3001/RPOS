@@ -1,3 +1,6 @@
+#ifndef _KERNEL_H
+#define _KERNEL_H
+
 // asm level keyboard ISR
 void keyboard_handler(void);
 
@@ -10,3 +13,5 @@ bool longmode_supported(void);
 
 // halt forever
 void asm_halt(void);
+
+#endif
