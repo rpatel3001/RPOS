@@ -1,6 +1,7 @@
 #ifndef _KEYBOARD_H
 #define _KEYBOARD_H
 
+// struct to represent a keypress event
 typedef struct key_press {
 	bool shift;
 	bool control;

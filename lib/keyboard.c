@@ -23,7 +23,8 @@ bool alt_down = false;
 bool capslock_down = false;
 bool function_down = false;
 
-key_press scan_to_vk(uint8_t scan[]) {
+// convert a scancode into a keypress event
+key_press scan_to_kp(uint8_t scan[]) {
 	uint8_t pause[] = {0xe1, 0x1d, 0x45, 0xe1, 0x9d, 0xc5};
 	uint8_t controlpause[] = {0xe0, 0x46, 0xe0, 0xc6, 0x00, 0x00};
 
@@ -143,6 +144,7 @@ static bool is_valid_key(key_press kp) {
 	       kp.keycode != 0;
 }
 
+// C keyboard ISR
 void keyboard_handler_main(void) {
 	uint8_t scancode[6];
 	size_t index = 0;
@@ -162,9 +164,9 @@ void keyboard_handler_main(void) {
 		return;
 	}
 
-	key_press vk = scan_to_vk(scancode);
-	if (is_valid_key(vk)) {
-		callback(vk);
+	key_press kp = scan_to_kp(scancode);
+	if (is_valid_key(kp)) {
+		callback(kp);
 	}
 }
 

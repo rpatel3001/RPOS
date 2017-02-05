@@ -18,6 +18,7 @@ size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
 
+//update the VGA cursor position
 static void update_cursor(int row, int col) {
 	size_t index=(row * VGA_WIDTH) + col;
 

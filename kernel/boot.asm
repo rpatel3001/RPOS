@@ -65,7 +65,6 @@ _start:
 
 	; If the system has nothing more to do, put the computer into an
 	; infinite loop.
-	cli
-.hang:	hlt
-	jmp .hang
+	extern asm_halt
+	jmp asm_halt
 .end:

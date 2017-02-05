@@ -1,5 +1,13 @@
 section .text
 
+; halt forever
+global asm_halt:function
+asm_halt:
+    cli
+    hlt
+    jmp asm_halt
+
+; load the idt
 global load_idt:function
 load_idt:
     mov edx, [esp + 4]
@@ -7,12 +15,14 @@ load_idt:
     sti
     ret
 
+; asm level keyboard ISR
 global keyboard_handler:function
 keyboard_handler:
     extern keyboard_handler_main
     call    keyboard_handler_main
     iret
 
+; check if CPUID is supported
 global cpuid_supported:function
 cpuid_supported:
     ; If we can flip bit 21 of EFLAGS, CPUID is available.
@@ -40,6 +50,7 @@ cpuid_supported:
     mov eax, 0
     ret
 
+; check if long mode is supported
 global longmode_supported:function
 longmode_supported:
 	; first determine if extended cpuid functions are available

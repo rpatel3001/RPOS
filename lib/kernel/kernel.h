@@ -1,5 +1,12 @@
+// asm level keyboard ISR
 void keyboard_handler(void);
+
+// load the ISR
 void load_idt(uint32_t *idt_ptr);
 
+// checks to make sure we can run on this hardware
 bool cpuid_supported(void);
 bool longmode_supported(void);
+
+// halt forever
+void asm_halt(void);
