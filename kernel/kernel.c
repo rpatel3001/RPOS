@@ -73,18 +73,17 @@ void abort(char* msg) {
 struct IDT_entry IDT[IDT_SIZE];
 //initialize the IDT
 void idt_init(void) {
-	uint32_t keyboard_address;
-	uint32_t idt_address;
-	uint32_t idt_ptr[2];
+	uintptr_t keyboard_address;
+	uintptr_t idt_address;
+	uintptr_t idt_ptr[2];
 
 	/* populate IDT entry of keyboard's interrupt */
-	keyboard_address = (uint32_t)keyboard_handler;
+	keyboard_address = (uintptr_t)keyboard_handler;
 	IDT[0x21].offset_lowerbits = keyboard_address & 0xffff;
 	IDT[0x21].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
 	IDT[0x21].zero = 0;
 	IDT[0x21].type_attr = 0x8e; /* INTERRUPT_GATE */
 	IDT[0x21].offset_higherbits = (keyboard_address & 0xffff0000) >> 16;
-
 
 	/*     Ports
 	*  PIC1 PIC2
@@ -118,7 +117,7 @@ void idt_init(void) {
 	write_port(0xA1 , 0xff);
 
 	/* fill the IDT descriptor */
-	idt_address = (uint32_t)IDT ;
+	idt_address = (uintptr_t)IDT ;
 	idt_ptr[0] = (sizeof (struct IDT_entry) * IDT_SIZE) + ((idt_address & 0xffff) << 16);
 	idt_ptr[1] = idt_address >> 16 ;
 

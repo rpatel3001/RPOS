@@ -11,7 +11,4 @@ struct IDT_entry {
 	uint16_t offset_higherbits;
 };
 
-//initialize the IDT
-void idt_init(void);
-
 #endif
