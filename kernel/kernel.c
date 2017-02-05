@@ -6,22 +6,8 @@
 #include <terminal.h>
 #include <serial.h>
 #include <string.h>
-
-extern uint32_t get_eax(void);
-extern uint32_t get_ebx(void);
-extern uint32_t get_ecx(void);
-extern uint32_t get_edx(void);
-extern uint32_t get_esi(void);
-extern uint32_t get_edi(void);
-extern uint32_t get_ebp(void);
-extern uint32_t get_esp(void);
-extern uint32_t get_flags(void);
-extern uint16_t get_ss(void);
-extern uint16_t get_cs(void);
-extern uint16_t get_ds(void);
-extern uint16_t get_es(void);
-extern uint16_t get_fs(void);
-extern uint16_t get_gs(void);
+#include <kernel/kernel.h>
+#include <kernel/asm.h>
 
 void kernel_printregisters(void) {
 	serial_writestring("  eax:\t");
@@ -68,9 +54,6 @@ void abort(char* msg) {
 }
 
 char key_to_char(key_press kp) {
-	if (kp.alt || kp.function || kp.control) {
-		return 0;
-	}
 	return keymap[kp.keycode][kp.shift ? 1 : 0];
 }
 
@@ -78,6 +61,11 @@ char linebuffer[VGA_WIDTH+1];
 size_t line_index = 0;
 void kernel_handlechar(key_press kp) {
 	char outchar = key_to_char(kp);
+
+	if(outchar == 'h' && kp.control) {
+		abort("HALT SIGNAL RECEIVED!\n");
+	}
+
 	if (!outchar) {
 		return;
 	}
@@ -99,9 +87,10 @@ void kernel_main(void) {
 	serial_init();
 	terminal_init();
 	terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+	serial_writestring("terminal initialized\n");
 
-	if(eax != 0x2BADB00) {
-		abort("multiboot magic number not found");
+	if(eax != 0x2BADB002) {
+		abort("multiboot magic number not found\n");
 	}
 
 	idt_init();

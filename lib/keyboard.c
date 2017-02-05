@@ -3,13 +3,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include <serial.h>
+#include <kernel/asm.h>
+#include <kernel/kernel.h>
 #include "keyboard_scancodes.h"
 #include "keyboard.h"
-
-extern void keyboard_handler(void);
-extern uint8_t read_port(uint16_t port);
-extern void write_port(uint16_t port, uint8_t data);
-extern void load_idt(uint32_t *idt_ptr);
 
 #define KEYBOARD_DATA_PORT 0x60
 #define KEYBOARD_STATUS_PORT 0x64
@@ -188,7 +185,6 @@ struct IDT_entry {
 };
 
 struct IDT_entry IDT[IDT_SIZE];
-extern int get_cs(void);
 //initialize the IDT
 void idt_init(void) {
 	uint32_t keyboard_address;
