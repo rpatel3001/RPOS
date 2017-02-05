@@ -29,7 +29,7 @@ rpos.bin: $(LIBOBJ)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 boot:
-	qemu-system-i386 -cdrom rpos.iso -serial stdio
+	qemu-system-x86_64 -cdrom rpos.iso -serial stdio
 
 clean:
 	find . -name '*.o' -delete

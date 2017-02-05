@@ -3,16 +3,15 @@
 #include <stdbool.h>
 #include <string.h>
 #include <serial.h>
+#include <kernel/asm.h>
 #include "terminal.h"
 
-extern void write_port(uint16_t port, uint8_t data);
+#define VGA_PORT 0x3D4
 
 //give a vga buffer value for a character and color combo
 static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 	return (uint16_t) uc | (uint16_t) color << 8;
 }
-
-#define VGA_PORT 0x3D4
 
 size_t terminal_row;
 size_t terminal_column;
@@ -42,7 +41,6 @@ void terminal_init(void) {
 			terminal_buffer[index] = vga_entry(' ', terminal_color);
 		}
 	}
-	serial_writestring("terminal initialized\n");
 }
 
 //set the background and foreground color

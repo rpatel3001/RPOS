@@ -50,7 +50,7 @@ void abort(char* msg) {
 	terminal_putchar('\f');
 	terminal_writestring("ERROR: ");
 	terminal_writestring(msg);
-	while(1);
+	while (1);
 }
 
 char key_to_char(key_press kp) {
@@ -62,7 +62,7 @@ size_t line_index = 0;
 void kernel_handlechar(key_press kp) {
 	char outchar = key_to_char(kp);
 
-	if(outchar == 'h' && kp.control) {
+	if (outchar == 'h' && kp.control) {
 		abort("HALT SIGNAL RECEIVED!\n");
 	}
 
@@ -89,8 +89,20 @@ void kernel_main(void) {
 	terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	serial_writestring("terminal initialized\n");
 
-	if(eax != 0x2BADB002) {
+	if (eax != 0x2BADB002) {
 		abort("multiboot magic number not found\n");
+	} else {
+		serial_writestring("multiboot magic number found\n");
+	}
+	if (!cpuid_supported()) {
+		abort("CPUID not supported\n");
+	} else {
+		serial_writestring("CPUID supported\n");
+	}
+	if (!longmode_supported()) {
+		abort("long mode not supported\n");
+	} else {
+		serial_writestring("long mode supported\n");
 	}
 
 	idt_init();
