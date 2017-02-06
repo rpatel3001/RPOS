@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <serial.h>
-#include <kernel/asm.h>
+#include <asm.h>
 #include "keyboard_scancodes.h"
 #include "keyboard.h"
 
