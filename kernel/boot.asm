@@ -1,9 +1,8 @@
 ; Declare constants for the multiboot header.
-MBALIGN  equ  1<<0              ; align loaded modules on page boundaries
-MEMINFO  equ  1<<1              ; provide memory map
-FLAGS    equ  MBALIGN | MEMINFO ; this is the Multiboot 'flag' field
-MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
-CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
+ARCHITECTURE equ 0x00000000
+HEADER_LEN equ header_end - header_start
+MAGIC    equ  0xE85250D6
+CHECKSUM equ -(MAGIC + ARCHITECTURE + HEADER_LEN)
 
 ; Declare a multiboot header that marks the program as a kernel. These are
 ; magic values that are documented in the multiboot standard. The bootloader
@@ -12,9 +11,17 @@ CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
 ; header can be forced to be within the first 8 KiB of the kernel file.
 section .multiboot
 align 4
+header_start:
 	dd MAGIC
-	dd FLAGS
+	dd ARCHITECTURE
+	dd HEADER_LEN
 	dd CHECKSUM
+
+	; end tag
+	dw 0
+	dw 0
+	dd 8
+header_end:
 
 ; The multiboot standard does not define the value of the stack pointer
 ; register (esp) and it is up to the kernel to provide a stack. This allocates

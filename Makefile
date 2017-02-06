@@ -20,7 +20,7 @@ rpos.iso: rpos.bin
 
 rpos.bin: $(LIBOBJ)
 	$(CC) $(CFLAGS) -nostdlib -lgcc -T linker.ld -o rpos.bin $(LIBOBJ)
-	grub-file --is-x86-multiboot rpos.bin
+	grub-file --is-x86-multiboot2 rpos.bin
 
 %.asm.o: %.asm
 	nasm -felf32 -o $@ $<

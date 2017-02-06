@@ -177,10 +177,10 @@ void kernel_main(void) {
 	serial_writestring("terminal initialized\n");
 
 	// do some checks to make sure we can fully boot
-	if (eax != 0x2BADB002) {
-		abort("multiboot magic number not found\n");
+	if (eax != 0x36D76289) {
+		abort("multiboot2 magic number not found\n");
 	} else {
-		serial_writestring("multiboot magic number found\n");
+		serial_writestring("multiboot2 magic number found\n");
 	}
 	if (!cpuid_supported()) {
 		abort("CPUID not supported\n");
