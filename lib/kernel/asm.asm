@@ -1,4 +1,5 @@
 section .text
+bits 32
 
 global get_eax:function
 get_eax:

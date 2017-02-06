@@ -1,7 +1,7 @@
 CC=i686-elf-gcc
 
 CFLAGS?=-O2 -g -std=gnu11
-CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -isystem lib
+CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -isystem lib -mno-red-zone -mno-mmx -mno-sse -mno-sse2 #-mcmodel=large
 
 LIBINC:=$(shell find . -name '*.h' | grep -v crosscompiler)
 LIB_C_SRC:=$(shell find . -name '*.c' | grep -v crosscompiler)

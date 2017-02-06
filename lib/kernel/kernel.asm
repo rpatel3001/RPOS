@@ -1,4 +1,5 @@
 section .text
+bits 32
 
 ; halt forever
 global asm_halt:function
