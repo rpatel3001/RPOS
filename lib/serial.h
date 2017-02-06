@@ -17,6 +17,6 @@ void serial_putchar(char c);
 void serial_writeint10(int32_t data);
 
 //write an integer with radix 16
-void serial_writeint16(uint32_t data);
+void serial_writeint16(uint64_t data);
 
 #endif
