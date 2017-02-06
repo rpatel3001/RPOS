@@ -144,13 +144,13 @@ static bool is_valid_key(key_press kp) {
 
 // C keyboard ISR
 void keyboard_handler_main(void) {
+	/* write EOI */
+	write_port(0x20, 0x20);
+
 	uint8_t scancode[6];
 	size_t index = 0;
 
 	memset(scancode, 0, 6);
-
-	/* write EOI */
-	write_port(0x20, 0x20);
 
 	uint8_t status = read_port(KEYBOARD_STATUS_PORT);
 	/* Lowest bit of status will be set if buffer is not empty */
@@ -170,8 +170,6 @@ void keyboard_handler_main(void) {
 
 //initialize the keyboard
 void kb_init(void (*handler)(key_press)) {
-	/* 0xFD is 11111101 - enables only IRQ1 (keyboard)*/
-	write_port(0x21 , read_port(0x21) & 0xFD);
 	callback = handler;
 	serial_writestring("keyboard initialized\n");
 }

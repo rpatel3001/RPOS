@@ -1,0 +1,93 @@
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <serial.h>
+#include <asm.h>
+#include <string.h>
+#include "kernel.h"
+#include "interrupt.h"
+
+#define PIC1_PORT 0x20
+#define PIC2_PORT 0xA0
+
+IDT_entry IDT[IDT_SIZE];
+//initialize the IDT
+void idt_init(IDT_entry idt[IDT_SIZE]) {
+	uintptr_t idt_address;
+	uintptr_t idt_ptr[2];
+
+	memcpy(IDT, idt, sizeof(IDT_entry) * IDT_SIZE);
+
+	/* ICW1 - begin initialization */
+	write_port(PIC1_PORT , 0x11);
+	write_port(PIC2_PORT , 0x11);
+
+	/* ICW2 - remap offset address of IDT */
+	/*
+	* In x86 protected mode, we have to remap the PICs beyond 0x20 because
+	* Intel have designated the first 32 interrupts as "reserved" for cpu exceptions
+	*/
+	write_port(PIC1_PORT + 1, 0x20);
+	write_port(PIC2_PORT + 1, 0x28);
+
+	/* ICW3 - setup cascading */
+	write_port(PIC1_PORT + 1, 0x00);
+	write_port(PIC2_PORT + 1, 0x00);
+
+	/* ICW4 - environment info */
+	write_port(PIC1_PORT + 1, 0x01);
+	write_port(PIC2_PORT + 1, 0x01);
+	/* Initialization finished */
+
+	/* mask interrupts */
+	write_port(PIC1_PORT + 1, 0xff);
+	write_port(PIC2_PORT + 1, 0xff);
+
+	/* fill the IDT descriptor */
+	idt_address = (uintptr_t)IDT ;
+	idt_ptr[0] = (sizeof (struct IDT_entry) * IDT_SIZE) + ((idt_address & 0xffff) << 16);
+	idt_ptr[1] = idt_address >> 16 ;
+
+	load_idt(idt_ptr);
+	serial_writestring("interrrupts initialized\n");
+}
+
+uint8_t get_interrupt_mask(uint8_t pic) {
+	if (pic == 1) {
+		return read_port(PIC1_PORT + 1);
+	} else {
+		return read_port(PIC2_PORT + 1);
+	}
+}
+
+bool is_interrupt_enabled(uint8_t interrupt) {
+	if (interrupt > 7) {
+		return get_interrupt_mask(2) & (1 << (interrupt - 8));
+	} else {
+		return get_interrupt_mask(1) & (1 << interrupt);
+	}
+}
+
+void enable_interrupt(uint8_t interrupt) {
+	if (interrupt > 7) {
+		write_port(PIC2_PORT + 1, get_interrupt_mask(2) & ~(1 << (interrupt - 8)));
+	} else {
+		write_port(PIC1_PORT + 1, get_interrupt_mask(1) & ~(1 << interrupt));
+	}
+}
+
+void disable_interrupt(uint8_t interrupt) {
+	if (interrupt > 7) {
+		write_port(PIC2_PORT + 1, get_interrupt_mask(2) | (1 << (interrupt - 8)));
+	} else {
+		write_port(PIC1_PORT + 1, get_interrupt_mask(1) | (1 << interrupt));
+	}
+}
+
+void set_interrupt_mask(uint8_t pic, uint8_t mask) {
+	if (pic == 1) {
+		write_port(PIC1_PORT + 1, mask);
+	} else if (pic == 2) {
+		write_port(PIC2_PORT + 1, mask);
+	}
+}

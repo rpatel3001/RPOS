@@ -138,8 +138,18 @@ void kernel_main(void) {
 		serial_writestring("long mode supported\n");
 	}
 
-	idt_init();
+	IDT_entry idt[IDT_SIZE];
+
+	/* populate IDT entry of keyboard's interrupt */
+	uintptr_t keyboard_address = (uintptr_t)keyboard_handler;
+	idt[0x21].offset_lowerbits = keyboard_address & 0xffff;
+	idt[0x21].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
+	idt[0x21].zero = 0;
+	idt[0x21].type_attr = 0x8e; /* INTERRUPT_GATE */
+	idt[0x21].offset_higherbits = (keyboard_address & 0xffff0000) >> 16;
+	idt_init(idt);
 	kb_init(&kernel_handlechar);
+	enable_interrupt(1);
 
 	while (1);
 }
