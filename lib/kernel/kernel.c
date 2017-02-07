@@ -148,6 +148,14 @@ void kernel_main(void) {
 	idt[KEYBOARD_INT_VEC].zero = 0;
 	idt[KEYBOARD_INT_VEC].type_attr = 0x8e; /* INTERRUPT_GATE */
 	idt[KEYBOARD_INT_VEC].offset_higherbits = (keyboard_address & 0xffff0000) >> 16;
+
+	uintptr_t divadd = (uintptr_t)asm_div_by_zero_ISR;
+	idt[0].offset_lowerbits = divadd & 0xffff;
+	idt[0].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
+	idt[0].zero = 0;
+	idt[0].type_attr = 0x8e; /* INTERRUPT_GATE */
+	idt[0].offset_higherbits = (divadd & 0xffff0000) >> 16;
+
 	idt_init(idt);
 	kb_init(&kernel_handlechar);
 	enable_interrupt(KEYBOARD_INT_VEC);

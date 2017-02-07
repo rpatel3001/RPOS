@@ -1,6 +1,8 @@
 #ifndef _SERIAL_H
 #define _SERIAL_H
 
+#include <stddef.h>
+
 //initialize serial output
 void serial_init(void);
 
