@@ -133,11 +133,6 @@ void kernel_main(void) {
 	} else {
 		serial_writestring("CPUID supported\n");
 	}
-	if (!longmode_supported()) {
-		abort("long mode not supported\n");
-	} else {
-		serial_writestring("long mode supported\n");
-	}
 
 	IDT_entry idt[IDT_SIZE];
 

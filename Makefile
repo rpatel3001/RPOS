@@ -31,7 +31,7 @@ build/%.c.o: %.c $(LIBINC)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 boot:
-	qemu-system-x86_64 -cdrom build/rpos.iso -serial stdio
+	qemu-system-i386 -cdrom build/rpos.iso -serial stdio
 
 clean:
 	-rm -rf build
