@@ -4,6 +4,8 @@
 #include <string.h>
 #include <serial.h>
 #include <asm.h>
+#include <kernel/interrupt.h>
+#include <kernel/ISR.h>
 #include "keyboard_scancodes.h"
 #include "keyboard.h"
 
@@ -143,10 +145,7 @@ static bool is_valid_key(key_press kp) {
 }
 
 // C keyboard ISR
-void keyboard_handler_main(void) {
-	/* write EOI */
-	write_port(0x20, 0x20);
-
+void keyboard_ISR(void) {
 	uint8_t scancode[6];
 	size_t index = 0;
 
@@ -158,6 +157,10 @@ void keyboard_handler_main(void) {
 		scancode[index++] = read_port(KEYBOARD_DATA_PORT);
 		status = read_port(KEYBOARD_STATUS_PORT);
 	}
+
+	/* write EOI */
+	send_eoi(KEYBOARD_INT_VEC);
+
 	if (!scancode[0]) {
 		return;
 	}

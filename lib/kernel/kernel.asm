@@ -16,13 +16,6 @@ load_idt:
     sti
     ret
 
-; asm level keyboard ISR
-global keyboard_handler:function
-keyboard_handler:
-    extern keyboard_handler_main
-    call    keyboard_handler_main
-    iret
-
 ; check if CPUID is supported
 global cpuid_supported:function
 cpuid_supported:

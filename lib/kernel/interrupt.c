@@ -4,7 +4,6 @@
 #include <serial.h>
 #include <asm.h>
 #include <string.h>
-#include "kernel.h"
 #include "interrupt.h"
 
 #define PIC1_PORT 0x20
@@ -27,8 +26,8 @@ void idt_init(IDT_entry idt[IDT_SIZE]) {
 	* In x86 protected mode, we have to remap the PICs beyond 0x20 because
 	* Intel have designated the first 32 interrupts as "reserved" for cpu exceptions
 	*/
-	write_port(PIC1_PORT + 1, 0x20);
-	write_port(PIC2_PORT + 1, 0x28);
+	write_port(PIC1_PORT + 1, INTERRUPT_OFFSET);
+	write_port(PIC2_PORT + 1, INTERRUPT_OFFSET + 8);
 
 	/* ICW3 - setup cascading */
 	write_port(PIC1_PORT + 1, 0x00);
@@ -61,6 +60,7 @@ uint8_t get_interrupt_mask(uint8_t pic) {
 }
 
 bool is_interrupt_enabled(uint8_t interrupt) {
+	interrupt -= INTERRUPT_OFFSET;
 	if (interrupt > 7) {
 		return get_interrupt_mask(2) & (1 << (interrupt - 8));
 	} else {
@@ -69,6 +69,7 @@ bool is_interrupt_enabled(uint8_t interrupt) {
 }
 
 void enable_interrupt(uint8_t interrupt) {
+	interrupt -= INTERRUPT_OFFSET;
 	if (interrupt > 7) {
 		write_port(PIC2_PORT + 1, get_interrupt_mask(2) & ~(1 << (interrupt - 8)));
 	} else {
@@ -77,6 +78,7 @@ void enable_interrupt(uint8_t interrupt) {
 }
 
 void disable_interrupt(uint8_t interrupt) {
+	interrupt -= INTERRUPT_OFFSET;
 	if (interrupt > 7) {
 		write_port(PIC2_PORT + 1, get_interrupt_mask(2) | (1 << (interrupt - 8)));
 	} else {
@@ -90,4 +92,12 @@ void set_interrupt_mask(uint8_t pic, uint8_t mask) {
 	} else if (pic == 2) {
 		write_port(PIC2_PORT + 1, mask);
 	}
+}
+
+void send_eoi(uint8_t interrupt) {
+	interrupt -= INTERRUPT_OFFSET;
+	if (interrupt > 7) {
+		write_port(PIC2_PORT, 0x20);
+	}
+	write_port(PIC1_PORT, 0x20);
 }

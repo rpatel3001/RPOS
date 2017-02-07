@@ -2,6 +2,7 @@
 #define _INTERRUPT_H
 
 #define IDT_SIZE 256
+#define INTERRUPT_OFFSET 0x20
 
 typedef struct IDT_entry {
 	uint16_t offset_lowerbits;
@@ -18,5 +19,6 @@ void enable_interrupt(uint8_t interrupt);
 void disable_interrupt(uint8_t interrupt);
 void set_interrupt_mask(uint8_t pic, uint8_t mask);
 uint8_t get_interrupt_mask(uint8_t pic);
+void send_eoi(uint8_t interrupt);
 
 #endif
