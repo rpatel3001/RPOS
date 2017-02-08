@@ -189,7 +189,7 @@ static char nibbleToHex(uint8_t c) {
 }
 
 //write an integer with radix 16
-void terminal_writeint16(uint32_t data) {
+void terminal_writeint16(uint64_t data) {
 	if (!data) {
 		terminal_writestring("0x00");
 	} else {

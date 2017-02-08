@@ -58,6 +58,6 @@ void terminal_writestring(const char* data);
 void terminal_writeint10(int32_t data);
 
 //write an integer with radix 16
-void terminal_writeint16(uint32_t data);
+void terminal_writeint16(uint64_t data);
 
 #endif
