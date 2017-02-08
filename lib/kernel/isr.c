@@ -59,45 +59,57 @@ void isr_07(void) {
 }
 
 // double fault
-void isr_08(void) {
+void isr_08(uint32_t err) {
 	char* msg = "double fault\n";
 	serial_writestring(msg);
-	abort(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	abort_code(msg, err);
 }
 
 // invalid TSS
-void isr_0a(void) {
+void isr_0a(uint32_t err) {
 	char* msg = "invalid TSS\n";
 	serial_writestring(msg);
-	abort(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	abort_code(msg, err);
 }
 
 // segment not present
-void isr_0b(void) {
+void isr_0b(uint32_t err) {
 	char* msg = "segment not present\n";
 	serial_writestring(msg);
-	abort(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	abort_code(msg, err);
 }
 
 // stack segment fault
-void isr_0c(void) {
+void isr_0c(uint32_t err) {
 	char* msg = "stack segment fault\n";
 	serial_writestring(msg);
-	abort(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	abort_code(msg, err);
 }
 
 // general protection fault
-void isr_0d(void) {
+void isr_0d(uint32_t err) {
 	char* msg = "general protection fault\n";
 	serial_writestring(msg);
-	abort(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	abort_code(msg, err);
 }
 
 // page fault
-void isr_0e(void) {
+void isr_0e(uint32_t err) {
 	char* msg = "page fault\n";
 	serial_writestring(msg);
-	abort(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	abort_code(msg, err);
 }
 
 // x87 floating point exception
@@ -108,10 +120,12 @@ void isr_10(void) {
 }
 
 // alignment check
-void isr_11(void) {
+void isr_11(uint32_t err) {
 	char* msg = "alignment check\n";
 	serial_writestring(msg);
-	abort(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	abort_code(msg, err);
 }
 
 // machine check
@@ -136,8 +150,10 @@ void isr_14(void) {
 }
 
 // security exception
-void isr_1e(void) {
-	char* msg = "security exception\n";
+void isr_1e(uint32_t err) {
+	char* msg = "security exception\nerr code: ";
 	serial_writestring(msg);
-	abort(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	abort_code(msg, err);
 }

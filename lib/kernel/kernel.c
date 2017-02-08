@@ -71,6 +71,64 @@ void abort(char* msg) {
 	asm_halt();
 }
 
+void abort_code(char* msg, uint32_t err) {
+	kernel_printregisters();
+	serial_writestring(msg);
+	serial_writeint16(err);
+	serial_putchar('\n');
+	terminal_setcolor(VGA_COLOR_WHITE, VGA_COLOR_RED);
+	terminal_putchar('\f');
+	terminal_writestring("ERROR: ");
+	terminal_writestring(msg);
+	terminal_writeint16(err);
+	terminal_putchar('\n');
+	asm_halt();
+}
+
+void handle_interrupt(isr_stack_frame *s) {
+	if (s->int_no == 0) {
+		isr_00();
+	} else if (s->int_no == 0x01) {
+		isr_01();
+	} else if (s->int_no == 0x02) {
+		isr_02();
+	} else if (s->int_no == 0x03) {
+		isr_03();
+	} else if (s->int_no == 0x04) {
+		isr_04();
+	} else if (s->int_no == 0x05) {
+		isr_05();
+	} else if (s->int_no == 0x06) {
+		isr_06();
+	} else if (s->int_no == 0x07) {
+		isr_07();
+	} else if (s->int_no == 0x08) {
+		isr_08(s->err);
+	} else if (s->int_no == 0x0a) {
+		isr_0a(s->err);
+	} else if (s->int_no == 0x0b) {
+		isr_0b(s->err);
+	} else if (s->int_no == 0x0c) {
+		isr_0c(s->err);
+	} else if (s->int_no == 0x0d) {
+		isr_0d(s->err);
+	} else if (s->int_no == 0x0e) {
+		isr_0e(s->err);
+	} else if (s->int_no == 0x10) {
+		isr_10();
+	} else if (s->int_no == 0x11) {
+		isr_11(s->err);
+	} else if (s->int_no == 0x12) {
+		isr_12();
+	} else if (s->int_no == 0x13) {
+		isr_13();
+	} else if (s->int_no == 0x14) {
+		isr_14();
+	} else if (s->int_no == 0x1e) {
+		isr_1e(s->err);
+	}
+}
+
 void add_isr(IDT_entry idt[IDT_SIZE], size_t vec, uintptr_t isr) {
 	idt[vec].offset_lowerbits = isr & 0xffff;
 	idt[vec].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
