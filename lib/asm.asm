@@ -7,44 +7,37 @@ get_eax:
 
 global get_ebx:function
 get_ebx:
-	push ebx
-	pop eax
+	mov eax, ebx
 	ret
 
 global get_ecx:function
 get_ecx:
-	push ecx
-	pop eax
+	mov eax, ecx
 	ret
 
 global get_edx:function
 get_edx:
-	push edx
-	pop eax
+	mov eax, edx
 	ret
 
 global get_esi:function
 get_esi:
-	push esi
-	pop eax
+	mov eax, esi
 	ret
 
 global get_edi:function
 get_edi:
-	push edi
-	pop eax
+	mov eax, edi
 	ret
 
 global get_ebp:function
 get_ebp:
-	push ebp
-	pop eax
+	mov eax, ebp
 	ret
 
 global get_esp:function
 get_esp:
-	push esp
-	pop eax
+	mov eax, esp
 	ret
 
 global get_flags:function
@@ -55,38 +48,32 @@ get_flags:
 
 global get_ss:function
 get_ss:
-	push ss
-	pop eax
+	mov eax, ss
 	ret
 
 global get_cs:function
 get_cs:
-	push cs
-	pop eax
+	mov eax, cs
 	ret
 
 global get_ds:function
 get_ds:
-	push ds
-	pop eax
+	mov eax, ds
 	ret
 
 global get_es:function
 get_es:
-	push es
-	pop eax
+	mov eax, es
 	ret
 
 global get_fs:function
 get_fs:
-	push fs
-	pop eax
+	mov eax, fs
 	ret
 
 global get_gs:function
 get_gs:
-	push gs
-	pop eax
+	mov eax, gs
 	ret
 
 global read_port:function
