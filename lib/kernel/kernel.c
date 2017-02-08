@@ -63,6 +63,7 @@ void kernel_printregisters(void) {
 // print a message and hang the machine
 void abort(char* msg) {
 	kernel_printregisters();
+	serial_writestring("ERROR: ");
 	serial_writestring(msg);
 	terminal_setcolor(VGA_COLOR_WHITE, VGA_COLOR_RED);
 	terminal_putchar('\f');
@@ -73,13 +74,16 @@ void abort(char* msg) {
 
 void abort_code(char* msg, uint32_t err) {
 	kernel_printregisters();
+	serial_writestring("ERROR: ");
 	serial_writestring(msg);
+	serial_writestring("CODE: ");
 	serial_writeint16(err);
 	serial_putchar('\n');
 	terminal_setcolor(VGA_COLOR_WHITE, VGA_COLOR_RED);
 	terminal_putchar('\f');
 	terminal_writestring("ERROR: ");
 	terminal_writestring(msg);
+	terminal_writestring("CODE: ");
 	terminal_writeint16(err);
 	terminal_putchar('\n');
 	asm_halt();
