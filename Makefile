@@ -1,7 +1,7 @@
 CC=i686-elf-gcc
 
 CFLAGS?= -ggdb3 -std=gnu11
-CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -isystem lib -mno-red-zone -mno-mmx -mno-sse -mno-sse2 #-mcmodel=large
+CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -isystem lib
 
 LIBINC:=$(shell find . -name '*.h' | grep -v crosscompiler)
 LIB_C_SRC:=$(shell find . -name '*.c' | grep -v crosscompiler)
@@ -19,7 +19,7 @@ rpos.iso: rpos.bin
 	grub-mkrescue -o build/rpos.iso build/isodir
 
 rpos.bin: $(LIBOBJ)
-	$(CC) $(CFLAGS) -z max-page-size=0x1000 -n -ggdb -nostdlib -lgcc -T linker.ld -o build/rpos.bin $(LIBOBJ)
+	$(CC) $(CFLAGS) -nostdlib -lgcc -T linker.ld -o build/rpos.bin $(LIBOBJ)
 	grub-file --is-x86-multiboot2 build/rpos.bin
 
 build/%.asm.o: %.asm
