@@ -43,23 +43,3 @@ cpuid_supported:
 .no_cpuid:
     mov eax, 0
     ret
-
-; check if long mode is supported
-global longmode_supported:function
-longmode_supported:
-	; first determine if extended cpuid functions are available
-	mov eax, 0x80000000
-	cpuid
-	cmp eax, 0x80000001
-	jb .no_longmode
-
-	; check if long mode is available
-	mov eax, 0x80000001
-	cpuid
-	test edx, 1 << 29
-	jz .no_longmode
-	mov eax, 1
-	ret
-.no_longmode:
-	mov eax, 0
-	ret

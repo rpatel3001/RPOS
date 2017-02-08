@@ -35,3 +35,6 @@ boot:
 
 clean:
 	-rm -rf build
+
+list:
+	tree -I "build|crosscompiler"
