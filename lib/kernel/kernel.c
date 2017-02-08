@@ -154,33 +154,36 @@ size_t line_index = 0;
 void kernel_handlechar(key_press kp) {
 	char outchar = key_to_char(kp);
 
-	// halt on ctrl + h
 	if (outchar == 'h' && kp.control) {
+		// halt on ctrl + h
 		abort("HALT SIGNAL RECEIVED!\n");
-	}
-
-	// don't do anything if the key isn't printable
-	if (!outchar) {
+	} else if (outchar == 'c' && kp.control) {
+		// clear the screen on ctrl + c
+		terminal_putchar('\f');
+	} else if (!outchar) {
+		// don't do anything if the key isn't printable
 		return;
-	}
-
-	// print to terminal, add to linebuffer, and print to serial if it's a full line
-	terminal_putchar(outchar);
-	if (outchar == '\t') {
-		do {
-			linebuffer[line_index++] = ' ';
-		} while (line_index % 8 != 0 && line_index < VGA_WIDTH);
 	} else {
-		linebuffer[line_index++] = outchar;
-	}
-	if (outchar == '\n' || line_index == VGA_WIDTH) {
-		serial_writestring(linebuffer);
-		// clear the line buffer
-		memset(linebuffer, 0, VGA_WIDTH);
-		if (line_index == VGA_WIDTH) {
-			serial_putchar('\n');
+		// print to terminal, add to linebuffer, and print to serial if it's a full line
+		terminal_putchar(outchar);
+		if (outchar == '\t') {
+			do {
+				linebuffer[line_index++] = ' ';
+			} while (line_index % 8 != 0 && line_index < VGA_WIDTH);
+		} else if (outchar == '\b' ) {
+			--line_index;
+		} else if(outchar != 127) {
+			linebuffer[line_index++] = outchar;
 		}
-		line_index = 0;
+		if (outchar == '\n' || line_index == VGA_WIDTH) {
+			serial_writestring(linebuffer);
+			// clear the line buffer
+			memset(linebuffer, 0, VGA_WIDTH);
+			if (line_index == VGA_WIDTH) {
+				serial_putchar('\n');
+			}
+			line_index = 0;
+		}
 	}
 }
 
@@ -190,8 +193,8 @@ void kernel_main(void) {
 
 	// initialize serial first because a lot of debugging stuff uses it
 	serial_init();
-	terminal_init();
 	terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+	terminal_init();
 	serial_writestring("terminal initialized\n");
 
 	// do some checks to make sure we can fully boot

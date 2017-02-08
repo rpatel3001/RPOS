@@ -20,8 +20,7 @@ uint16_t* terminal_buffer;
 
 //update the VGA cursor position
 static void update_cursor(int row, int col) {
-	size_t index=(row * VGA_WIDTH) + col;
-
+	uint16_t index=(row * VGA_WIDTH) + col;
 	// cursor LOW port to vga INDEX register
 	write_port(VGA_PORT, 0x0F);
 	write_port(VGA_PORT + 1, index & 0xFF);
@@ -79,7 +78,6 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y) {
 
 //scroll up the terminal by one line
 void terminal_scroll() {
-	--terminal_row;
 	memcpy(terminal_buffer, terminal_buffer + VGA_WIDTH, 2 * VGA_WIDTH * (VGA_HEIGHT - 1));
 	for (size_t col = 0; col < VGA_WIDTH; ++col) {
 		terminal_putentryat(' ', terminal_color, col, VGA_HEIGHT - 1);
@@ -107,8 +105,10 @@ void terminal_putchar(char c) {
 	} else if (c == 10) {
 		//newline
 		terminal_column = 0;
-		if (++terminal_row == VGA_HEIGHT)
+		if (++terminal_row == VGA_HEIGHT) {
+			--terminal_row;
 			terminal_scroll();
+		}
 	} else if (c == 12) {
 		//form feed
 		terminal_init();
@@ -125,8 +125,10 @@ void terminal_putchar(char c) {
 		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 		if (++terminal_column == VGA_WIDTH) {
 			terminal_column = 0;
-			if (++terminal_row == VGA_HEIGHT)
+			if (++terminal_row == VGA_HEIGHT) {
+				--terminal_row;
 				terminal_scroll();
+			}
 		}
 	}
 	update_cursor(terminal_row, terminal_column);
