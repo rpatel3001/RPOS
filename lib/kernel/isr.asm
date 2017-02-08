@@ -1,6 +1,9 @@
 section .text
 bits 32
 
+; interrupt handlers go here
+
+; save registers and push esp, call the isr, then pop the two arguments
 asm_handle_interrupt:
 	pushad
 	push esp

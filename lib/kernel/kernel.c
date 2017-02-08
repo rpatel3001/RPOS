@@ -214,7 +214,26 @@ void kernel_main(void) {
 	idt[KEYBOARD_INT_VEC].type_attr = 0x8e; /* INTERRUPT_GATE */
 	idt[KEYBOARD_INT_VEC].offset_higherbits = (keyboard_address & 0xffff0000) >> 16;
 
-	add_isr(idt, 0, (uintptr_t)asm_isr_00);
+	add_isr(idt, 0x00, (uintptr_t)asm_isr_00);
+	add_isr(idt, 0x01, (uintptr_t)asm_isr_01);
+	add_isr(idt, 0x02, (uintptr_t)asm_isr_02);
+	add_isr(idt, 0x03, (uintptr_t)asm_isr_03);
+	add_isr(idt, 0x04, (uintptr_t)asm_isr_04);
+	add_isr(idt, 0x05, (uintptr_t)asm_isr_05);
+	add_isr(idt, 0x06, (uintptr_t)asm_isr_06);
+	add_isr(idt, 0x07, (uintptr_t)asm_isr_07);
+	add_isr(idt, 0x08, (uintptr_t)asm_isr_08);
+	add_isr(idt, 0x0a, (uintptr_t)asm_isr_0a);
+	add_isr(idt, 0x0b, (uintptr_t)asm_isr_0b);
+	add_isr(idt, 0x0c, (uintptr_t)asm_isr_0c);
+	add_isr(idt, 0x0d, (uintptr_t)asm_isr_0d);
+	add_isr(idt, 0x0e, (uintptr_t)asm_isr_1e);
+	add_isr(idt, 0x10, (uintptr_t)asm_isr_10);
+	add_isr(idt, 0x11, (uintptr_t)asm_isr_11);
+	add_isr(idt, 0x12, (uintptr_t)asm_isr_12);
+	add_isr(idt, 0x13, (uintptr_t)asm_isr_13);
+	add_isr(idt, 0x14, (uintptr_t)asm_isr_14);
+	add_isr(idt, 0x1e, (uintptr_t)asm_isr_1e);
 
 	idt_init(idt);
 	kb_init(&kernel_handlechar);
