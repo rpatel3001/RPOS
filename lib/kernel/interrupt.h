@@ -1,6 +1,8 @@
 #ifndef _INTERRUPT_H
 #define _INTERRUPT_H
 
+#include <stdbool.h>
+
 #define IDT_SIZE 256
 #define INTERRUPT_OFFSET 0x20
 

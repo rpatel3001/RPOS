@@ -1,6 +1,8 @@
 #ifndef _ASM_H
 #define _ASM_H
 
+#include <stdint.h>
+
 // retrieve CPU registers
 uint32_t get_eax(void);
 uint32_t get_ebx(void);

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <asm.h>
 #include <kernel/interrupt.h>
+#include <timer.h>
 #include "isr.h"
 #include "kernel.h"
 
@@ -130,6 +131,8 @@ void handle_interrupt(isr_stack_frame *s) {
 		isr_14();
 	} else if (s->int_no == 0x1e) {
 		isr_1e(s->err);
+	} else if (s->int_no == 0x20) {
+		timer_isr();
 	} else if (s->int_no == 0x21) {
 		keyboard_ISR();
 	}
@@ -172,7 +175,7 @@ void kernel_handlechar(key_press kp) {
 			} while (line_index % 8 != 0 && line_index < VGA_WIDTH);
 		} else if (outchar == '\b' ) {
 			--line_index;
-		} else if(outchar != 127) {
+		} else if (outchar != 127) {
 			linebuffer[line_index++] = outchar;
 		}
 		if (outchar == '\n' || line_index == VGA_WIDTH) {
@@ -232,14 +235,23 @@ void kernel_main(void) {
 	add_isr(idt, 0x14, (uintptr_t)asm_isr_14);
 	add_isr(idt, 0x1e, (uintptr_t)asm_isr_1e);
 
+	add_isr(idt, 0x20, (uintptr_t)asm_isr_20);
 	add_isr(idt, KEYBOARD_INT_VEC, (uintptr_t)asm_isr_21);
 
 	idt_init(idt);
 	load_idt(idt);
 
 	enable_interrupt(KEYBOARD_INT_VEC);
+	enable_interrupt(0x20);
 
+	timer_init(1000);
 	kb_init(&kernel_handlechar);
+
+	for (int i = 0; true; ++i) {
+		terminal_writeint10(i);
+		terminal_putchar('\n');
+		sleep(1000);
+	}
 
 	while (1);
 }
