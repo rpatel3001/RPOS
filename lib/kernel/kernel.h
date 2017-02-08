@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 // load the ISR
-void load_idt(uintptr_t *idt_ptr);
+void asm_load_idt(uintptr_t *idt_ptr);
 
 // check if cpuid is available
 bool cpuid_supported(void);

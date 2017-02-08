@@ -230,8 +230,10 @@ void kernel_main(void) {
 	add_isr(idt, 0x1e, (uintptr_t)asm_isr_1e);
 
 	add_isr(idt, KEYBOARD_INT_VEC, (uintptr_t)asm_isr_21);
-	
+
 	idt_init(idt);
+	load_idt(idt);
+
 	enable_interrupt(KEYBOARD_INT_VEC);
 
 	kb_init(&kernel_handlechar);

@@ -9,8 +9,8 @@ asm_halt:
     jmp asm_halt
 
 ; load the idt
-global load_idt:function
-load_idt:
+global asm_load_idt:function
+asm_load_idt:
     mov edx, [esp + 4]
     lidt [edx]
     sti

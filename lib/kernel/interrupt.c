@@ -12,12 +12,7 @@
 
 IDT_entry IDT[IDT_SIZE];
 //initialize the IDT
-void idt_init(IDT_entry idt[IDT_SIZE]) {
-	uintptr_t idt_address;
-	uintptr_t idt_ptr[2];
-
-	memcpy(IDT, idt, sizeof(IDT_entry) * IDT_SIZE);
-
+void idt_init() {
 	/* ICW1 - begin initialization */
 	write_port(PIC1_PORT , 0x11);
 	write_port(PIC2_PORT , 0x11);
@@ -43,13 +38,21 @@ void idt_init(IDT_entry idt[IDT_SIZE]) {
 	write_port(PIC1_PORT + 1, 0xff);
 	write_port(PIC2_PORT + 1, 0xff);
 
+	load_idt(IDT);
+
+	serial_writestring("PICs initialized\n");
+}
+
+void load_idt(IDT_entry idt[IDT_SIZE]) {
+	memcpy(IDT, idt, sizeof(IDT_entry) * IDT_SIZE);
+	uintptr_t idt_address;
+	uintptr_t idt_ptr[2];
 	/* fill the IDT descriptor */
 	idt_address = (uintptr_t)IDT ;
 	idt_ptr[0] = (sizeof (struct IDT_entry) * IDT_SIZE) + ((idt_address & 0xffff) << 16);
 	idt_ptr[1] = idt_address >> 16 ;
 
-	load_idt(idt_ptr);
-	serial_writestring("interrrupts initialized\n");
+	asm_load_idt(idt_ptr);
 }
 
 uint8_t get_interrupt_mask(uint8_t pic) {

@@ -12,7 +12,8 @@ typedef struct IDT_entry {
 	uint16_t offset_higherbits;
 } IDT_entry;
 
-void idt_init(IDT_entry IDT[IDT_SIZE]);
+void idt_init();
+void load_idt(IDT_entry IDT[IDT_SIZE]);
 
 bool is_interrupt_enabled(uint8_t interrupt);
 void enable_interrupt(uint8_t interrupt);
