@@ -7,7 +7,7 @@
 #include <string.h>
 #include <asm.h>
 #include <kernel/interrupt.h>
-#include "ISR.h"
+#include "isr.h"
 #include "kernel.h"
 
 // print the raw cpu registers
@@ -69,6 +69,14 @@ void abort(char* msg) {
 	terminal_writestring("ERROR: ");
 	terminal_writestring(msg);
 	asm_halt();
+}
+
+void add_isr(IDT_entry idt[IDT_SIZE], size_t vec, uintptr_t isr) {
+	idt[vec].offset_lowerbits = isr & 0xffff;
+	idt[vec].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
+	idt[vec].zero = 0;
+	idt[vec].type_attr = 0x8e; /* INTERRUPT_GATE */
+	idt[vec].offset_higherbits = (isr & 0xffff0000) >> 16;
 }
 
 // translate a scancode into an ascii character
@@ -144,12 +152,7 @@ void kernel_main(void) {
 	idt[KEYBOARD_INT_VEC].type_attr = 0x8e; /* INTERRUPT_GATE */
 	idt[KEYBOARD_INT_VEC].offset_higherbits = (keyboard_address & 0xffff0000) >> 16;
 
-	uintptr_t divadd = (uintptr_t)asm_div_by_zero_ISR;
-	idt[0].offset_lowerbits = divadd & 0xffff;
-	idt[0].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
-	idt[0].zero = 0;
-	idt[0].type_attr = 0x8e; /* INTERRUPT_GATE */
-	idt[0].offset_higherbits = (divadd & 0xffff0000) >> 16;
+	add_isr(idt, 0, (uintptr_t)asm_isr_00);
 
 	idt_init(idt);
 	kb_init(&kernel_handlechar);

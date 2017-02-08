@@ -5,7 +5,7 @@
 #include <serial.h>
 #include <asm.h>
 #include <kernel/interrupt.h>
-#include <kernel/ISR.h>
+#include <kernel/isr.h>
 #include "keyboard_scancodes.h"
 #include "keyboard.h"
 
