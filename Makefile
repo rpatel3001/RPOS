@@ -1,5 +1,7 @@
 CC=i686-elf-gcc
 
+QEMU=qemu-system-i386 -cdrom build/rpos.iso -serial stdio
+
 CFLAGS?= -ggdb3 -std=gnu11
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -isystem lib
 
@@ -31,10 +33,13 @@ build/%.c.o: %.c $(LIBINC)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 boot:
-	qemu-system-i386 -cdrom build/rpos.iso -serial stdio
+	$(QEMU)
 
 clean:
 	-rm -rf build
 
 list:
 	tree -I "build|crosscompiler"
+
+debug:
+	$(QEMU) -s -S -d guest_errors

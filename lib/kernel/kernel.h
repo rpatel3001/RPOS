@@ -4,9 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// asm level keyboard ISR
-void keyboard_handler(void);
-
 // load the ISR
 void load_idt(uintptr_t *idt_ptr);
 

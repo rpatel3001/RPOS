@@ -8,8 +8,8 @@ typedef struct isr_stack_frame {
 } isr_stack_frame;
 
 #define KEYBOARD_INT_VEC 0x21
-void asm_keyboard_ISR(void);
 
+// exceptions, int 0x00 through 0x1f
 void isr_00(void);
 void asm_isr_00(void);
 void isr_01(void);
@@ -50,5 +50,23 @@ void isr_14(void);
 void asm_isr_14(void);
 void isr_1e(uint32_t err);
 void asm_isr_1e(void);
+
+// IQRs, mapped to 0x20 to 0x2f
+void asm_isr_20(void);
+void asm_isr_21(void);
+void asm_isr_22(void);
+void asm_isr_23(void);
+void asm_isr_24(void);
+void asm_isr_25(void);
+void asm_isr_26(void);
+void asm_isr_27(void);
+void asm_isr_28(void);
+void asm_isr_29(void);
+void asm_isr_2a(void);
+void asm_isr_2b(void);
+void asm_isr_2c(void);
+void asm_isr_2d(void);
+void asm_isr_2e(void);
+void asm_isr_2f(void);
 
 #endif

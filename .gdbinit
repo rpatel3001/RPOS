@@ -1,3 +1,3 @@
 target remote localhost:1234
-symbol-file rpos.bin
+symbol-file build/rpos.bin
 break kernel_main

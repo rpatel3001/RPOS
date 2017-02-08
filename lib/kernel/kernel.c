@@ -130,6 +130,8 @@ void handle_interrupt(isr_stack_frame *s) {
 		isr_14();
 	} else if (s->int_no == 0x1e) {
 		isr_1e(s->err);
+	} else if (s->int_no == 0x21) {
+		keyboard_ISR();
 	}
 }
 
@@ -204,16 +206,8 @@ void kernel_main(void) {
 		serial_writestring("CPUID supported\n");
 	}
 
+	// enable ISRs
 	IDT_entry idt[IDT_SIZE];
-
-	/* populate IDT entry of keyboard's interrupt */
-	uintptr_t keyboard_address = (uintptr_t)asm_keyboard_ISR;
-	idt[KEYBOARD_INT_VEC].offset_lowerbits = keyboard_address & 0xffff;
-	idt[KEYBOARD_INT_VEC].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
-	idt[KEYBOARD_INT_VEC].zero = 0;
-	idt[KEYBOARD_INT_VEC].type_attr = 0x8e; /* INTERRUPT_GATE */
-	idt[KEYBOARD_INT_VEC].offset_higherbits = (keyboard_address & 0xffff0000) >> 16;
-
 	add_isr(idt, 0x00, (uintptr_t)asm_isr_00);
 	add_isr(idt, 0x01, (uintptr_t)asm_isr_01);
 	add_isr(idt, 0x02, (uintptr_t)asm_isr_02);
@@ -235,9 +229,12 @@ void kernel_main(void) {
 	add_isr(idt, 0x14, (uintptr_t)asm_isr_14);
 	add_isr(idt, 0x1e, (uintptr_t)asm_isr_1e);
 
+	add_isr(idt, KEYBOARD_INT_VEC, (uintptr_t)asm_isr_21);
+	
 	idt_init(idt);
-	kb_init(&kernel_handlechar);
 	enable_interrupt(KEYBOARD_INT_VEC);
+
+	kb_init(&kernel_handlechar);
 
 	while (1);
 }
