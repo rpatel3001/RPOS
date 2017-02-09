@@ -9,6 +9,7 @@ typedef struct isr_stack_frame {
     unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
 } isr_stack_frame;
 
+#define PIT_INT_VEC 0x20
 #define KEYBOARD_INT_VEC 0x21
 
 // exceptions, int 0x00 through 0x1f

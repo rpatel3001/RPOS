@@ -52,9 +52,9 @@ void handle_interrupt(isr_stack_frame *s) {
 		isr_14();
 	} else if (s->int_no == 0x1e) {
 		isr_1e(s->err);
-	} else if (s->int_no == 0x20) {
+	} else if (s->int_no == PIT_INT_VEC) {
 		timer_isr();
-	} else if (s->int_no == 0x21) {
+	} else if (s->int_no == KEYBOARD_INT_VEC) {
 		keyboard_ISR();
 	}
 	send_eoi(s->int_no);
@@ -157,14 +157,14 @@ void kernel_main(void) {
 	add_isr(idt, 0x14, (uintptr_t)asm_isr_14);
 	add_isr(idt, 0x1e, (uintptr_t)asm_isr_1e);
 
-	add_isr(idt, 0x20, (uintptr_t)asm_isr_20);
+	add_isr(idt, PIT_INT_VEC, (uintptr_t)asm_isr_20);
 	add_isr(idt, KEYBOARD_INT_VEC, (uintptr_t)asm_isr_21);
 
 	idt_init(idt);
 	load_idt(idt);
 
 	enable_interrupt(KEYBOARD_INT_VEC);
-	enable_interrupt(0x20);
+	enable_interrupt(PIT_INT_VEC);
 
 	timer_init(1000);
 	kb_init(&kernel_handlechar);
