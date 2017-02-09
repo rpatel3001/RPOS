@@ -136,6 +136,7 @@ void handle_interrupt(isr_stack_frame *s) {
 	} else if (s->int_no == 0x21) {
 		keyboard_ISR();
 	}
+	send_eoi(s->int_no);
 }
 
 void add_isr(IDT_entry idt[IDT_SIZE], size_t vec, uintptr_t isr) {

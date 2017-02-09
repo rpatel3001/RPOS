@@ -19,7 +19,6 @@ void timer_init(uint32_t f) {
 
 void timer_isr(void) {
 	count++;
-	send_eoi(0x20);
 }
 
 uint32_t millis(void) {

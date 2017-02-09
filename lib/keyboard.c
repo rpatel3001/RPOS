@@ -158,9 +158,6 @@ void keyboard_ISR(void) {
 		status = read_port(KEYBOARD_STATUS_PORT);
 	}
 
-	/* write EOI */
-	send_eoi(KEYBOARD_INT_VEC);
-
 	if (!scancode[0]) {
 		return;
 	}
