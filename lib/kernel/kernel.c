@@ -65,7 +65,7 @@ void add_isr(IDT_entry idt[IDT_SIZE], size_t vec, uintptr_t isr) {
 	idt[vec].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
 	idt[vec].zero = 0;
 	idt[vec].type_attr = 0x8e; /* INTERRUPT_GATE */
-	idt[vec].offset_higherbits = (isr & 0xffff0000) >> 16;
+	idt[vec].offset_higherbits = (isr >> 16) & 0xffff;
 }
 
 // translate a scancode into an ascii character
@@ -112,6 +112,22 @@ void kernel_handlechar(key_press kp) {
 	}
 }
 
+uint64_t page_dir_tab[4] __attribute__((aligned(0x20)));
+uint64_t page_dir[512] __attribute__((aligned(0x1000)));
+uint64_t page_tab[512] __attribute__((aligned(0x1000)));
+void init_paging(void) {
+	// add the page directory as the first entry in the page directory table
+	page_dir_tab[0] = (uintptr_t)&page_dir | 1;
+	// add the page table ass the first entry in the page directory
+	page_dir[0] = (uintptr_t)&page_tab | 3;
+	// identity map the first 2 MiB
+	for(size_t i = 0; i < 512; ++i) {
+		page_tab[i] = (i * 0x1000) | 3;
+	}
+	asm_init_paging((uintptr_t)&page_dir_tab);
+	serial_writestring("paging initialized\n");
+}
+
 void kernel_main(void) {
 	// save the inital eax value for later comparison
 	uint32_t eax = get_eax();
@@ -133,6 +149,8 @@ void kernel_main(void) {
 	} else {
 		serial_writestring("CPUID supported\n");
 	}
+
+	init_paging();
 
 	// enable ISRs
 	IDT_entry idt[IDT_SIZE];

@@ -16,6 +16,18 @@ asm_load_idt:
     sti
     ret
 
+global asm_init_paging:function
+asm_init_paging:
+    mov eax, cr4
+    bts eax, 5
+    mov cr4, eax
+    mov eax, [esp + 4]
+    mov cr3, eax
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
+    ret
+
 ; check if CPUID is supported
 global cpuid_supported:function
 cpuid_supported:
