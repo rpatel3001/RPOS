@@ -1,5 +1,4 @@
 #include <util.h>
-#include <serial.h>
 #include "isr.h"
 
 // divide by zero

@@ -1,6 +1,9 @@
 #ifndef _STRING_H
 #define _STRING_H
 
+#include <stdint.h>
+#include <stddef.h>
+
 //return the length of a null terminated string
 size_t strlen(const char* str);
 

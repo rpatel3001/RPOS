@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include <serial.h>
 #include <util.h>
 #include "terminal.h"
 

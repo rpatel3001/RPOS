@@ -1,6 +1,7 @@
 #ifndef _INTERRUPT_H
 #define _INTERRUPT_H
 
+#include <stdint.h>
 #include <stdbool.h>
 
 #define IDT_SIZE 256

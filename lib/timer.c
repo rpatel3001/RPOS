@@ -1,6 +1,5 @@
 #include <util.h>
 #include <serial.h>
-#include <kernel/interrupt.h>
 #include "timer.h"
 #define COMMAND_PORT 0x43
 #define CHAN0_PORT 0x40

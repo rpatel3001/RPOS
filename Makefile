@@ -32,6 +32,11 @@ build/%.c.o: %.c $(LIBINC)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+includes:
+	-for target in $(LIB_C_SRC) ; do \
+		include-what-you-use $(CFLAGS) $$target ; \
+	done
+
 boot:
 	$(QEMU)
 

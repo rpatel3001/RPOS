@@ -1,6 +1,8 @@
 #ifndef _ISR_H
 #define _ISR_H
 
+#include <stdint.h>
+
 typedef struct isr_stack_frame {
     unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
     unsigned int int_no, err;    /* our 'push byte #' and ecodes do this */

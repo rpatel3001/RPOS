@@ -1,6 +1,3 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
 #include <serial.h>
 #include <util.h>
 #include <string.h>

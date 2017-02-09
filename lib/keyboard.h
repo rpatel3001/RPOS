@@ -2,6 +2,7 @@
 #define _KEYBOARD_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 // struct to represent a keypress event
 typedef struct key_press {
