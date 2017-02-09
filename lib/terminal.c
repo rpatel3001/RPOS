@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <serial.h>
-#include <asm.h>
+#include <util.h>
 #include "terminal.h"
 
 #define VGA_PORT 0x3D4

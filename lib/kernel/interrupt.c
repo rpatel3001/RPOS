@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <serial.h>
-#include <asm.h>
+#include <util.h>
 #include <string.h>
 #include <kernel/kernel.h>
 #include "interrupt.h"

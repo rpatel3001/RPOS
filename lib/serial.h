@@ -2,6 +2,7 @@
 #define _SERIAL_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 //initialize serial output
 void serial_init(void);

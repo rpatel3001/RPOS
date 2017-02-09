@@ -3,7 +3,7 @@
 #include <serial.h>
 #include <stdbool.h>
 #include <string.h>
-#include <asm.h>
+#include <util.h>
 
 #define PORT 0x3f8
 
