@@ -12,6 +12,10 @@
 #include "kernel.h"
 
 void handle_interrupt(isr_stack_frame *s) {
+	if(s->int_no < 0x20) {
+		serial_writeint16(s->int_no);
+		serial_writestring(" exception\n");
+	}
 	if (s->int_no == 0) {
 		isr_00();
 	} else if (s->int_no == 0x01) {
@@ -112,17 +116,19 @@ void kernel_handlechar(key_press kp) {
 	}
 }
 
+#define PAGE_WRITABLE 2
+#define PAGE_PRESENT  1
 uint64_t page_dir_tab[4] __attribute__((aligned(0x20)));
 uint64_t page_dir[512] __attribute__((aligned(0x1000)));
 uint64_t page_tab[512] __attribute__((aligned(0x1000)));
 void init_paging(void) {
 	// add the page directory as the first entry in the page directory table
-	page_dir_tab[0] = (uintptr_t)&page_dir | 1;
+	page_dir_tab[0] = (uintptr_t)&page_dir | PAGE_PRESENT;
 	// add the page table ass the first entry in the page directory
-	page_dir[0] = (uintptr_t)&page_tab | 3;
+	page_dir[0] = (uintptr_t)&page_tab | PAGE_PRESENT | PAGE_WRITABLE;
 	// identity map the first 2 MiB
 	for(size_t i = 0; i < 512; ++i) {
-		page_tab[i] = (i * 0x1000) | 3;
+		page_tab[i] = (i * 0x1000) | PAGE_PRESENT | PAGE_WRITABLE;
 	}
 	asm_init_paging((uintptr_t)&page_dir_tab);
 	serial_writestring("paging initialized\n");
@@ -167,7 +173,7 @@ void kernel_main(void) {
 	add_isr(idt, 0x0b, (uintptr_t)asm_isr_0b);
 	add_isr(idt, 0x0c, (uintptr_t)asm_isr_0c);
 	add_isr(idt, 0x0d, (uintptr_t)asm_isr_0d);
-	add_isr(idt, 0x0e, (uintptr_t)asm_isr_1e);
+	add_isr(idt, 0x0e, (uintptr_t)asm_isr_0e);
 	add_isr(idt, 0x10, (uintptr_t)asm_isr_10);
 	add_isr(idt, 0x11, (uintptr_t)asm_isr_11);
 	add_isr(idt, 0x12, (uintptr_t)asm_isr_12);
@@ -186,6 +192,14 @@ void kernel_main(void) {
 
 	timer_init(1000);
 	kb_init(&kernel_handlechar);
+
+	serial_writestring("accessing phys addr 0\n");
+	uint8_t* ptr = 0;
+	serial_writeint16(*ptr);
+	serial_putchar('\n');
+	*ptr = 0xB0;
+	serial_writeint16(*ptr);
+	serial_writestring("\naccessed\n");
 
 	for (int i = 0; true; ++i) {
 		terminal_writeint10(i);

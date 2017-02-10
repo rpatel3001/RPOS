@@ -1,6 +1,6 @@
 CC=i686-elf-gcc
 
-QEMU=qemu-system-i386 -cdrom build/rpos.iso -serial stdio
+QEMU=qemu-system-i386 -cdrom build/rpos.iso -serial stdio -d guest_errors
 
 CFLAGS?= -ggdb3 -std=gnu11
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -isystem lib
@@ -47,4 +47,4 @@ list:
 	tree -I "build|crosscompiler"
 
 debug:
-	$(QEMU) -s -S -d guest_errors
+	$(QEMU) -s -S

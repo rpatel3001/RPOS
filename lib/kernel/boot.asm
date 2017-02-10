@@ -68,7 +68,10 @@ _start:
 	; Enter the high-level kernel. The ABI requires the stack is 16-byte
 	; aligned at the time of the call instruction (which afterwards pushes
 	; the return pointer of size 4 bytes).
-
+	; enable write protect for testing page faults
+	mov edx, cr0
+	bts edx, 16
+	mov cr0, edx
 	extern kernel_main
 	call kernel_main
 
