@@ -46,7 +46,7 @@ void load_idt(IDT_entry idt[IDT_SIZE]) {
 	uintptr_t idt_ptr[2];
 	/* fill the IDT descriptor */
 	idt_address = (uintptr_t)IDT ;
-	idt_ptr[0] = (sizeof (struct IDT_entry) * IDT_SIZE) + ((idt_address & 0xffff) << 16);
+	idt_ptr[0] = (sizeof(IDT_entry) * IDT_SIZE) + ((idt_address & 0xffff) << 16);
 	idt_ptr[1] = idt_address >> 16 ;
 
 	asm_load_idt(idt_ptr);
