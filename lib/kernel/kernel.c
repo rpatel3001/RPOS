@@ -91,6 +91,7 @@ void kernel_handlechar(key_press kp) {
 		terminal_putchar('\f');
 	} else if (!outchar) {
 		// don't do anything if the key isn't printable
+		serial_writestring("couldn't print character\n");
 		return;
 	} else {
 		// print to terminal, add to linebuffer, and print to serial if it's a full line
@@ -187,22 +188,14 @@ void kernel_main(void) {
 	idt_init(idt);
 	load_idt(idt);
 
+	timer_init(100);
+	kb_init(&kernel_handlechar);
+
 	enable_interrupt(KEYBOARD_INT_VEC);
 	enable_interrupt(PIT_INT_VEC);
 
-	timer_init(1000);
-	kb_init(&kernel_handlechar);
-
-	serial_writestring("accessing phys addr 0\n");
-	uint8_t* ptr = 0;
-	serial_writeint16(*ptr);
-	serial_putchar('\n');
-	*ptr = 0xB0;
-	serial_writeint16(*ptr);
-	serial_writestring("\naccessed\n");
-
-	for (int i = 0; true; ++i) {
-		terminal_writeint10(i);
+	for (int i = 0; 0; ++i) {
+		terminal_writeint10(millis());
 		terminal_putchar('\n');
 		sleep(1000);
 	}
