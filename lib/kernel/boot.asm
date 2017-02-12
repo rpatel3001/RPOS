@@ -1,21 +1,14 @@
 ; Declare constants for the multiboot header.
-ARCH 		equ 0x00000000
-HEADER_LEN 	equ header_end - header_start
-MAGIC    	equ  0xE85250D6
-CHECKSUM 	equ -(MAGIC + ARCH + HEADER_LEN)
+MAGIC    equ 0x1BADB002
+FLAGS    equ 0
+CHECKSUM equ -(MAGIC + FLAGS)
 
 section .multiboot
 align 4
 	header_start:
 		dd MAGIC
-		dd ARCH
-		dd HEADER_LEN
+		dd FLAGS
 		dd CHECKSUM
-
-		; end tag
-		dw 0
-		dw 0
-		dd 8
 	header_end:
 
 section .bss
@@ -28,15 +21,19 @@ section .text
 bits 32
 	global _start:function
 	_start:
+		; init stack and save multiboot registers
 		mov esp, stack_top
+		push eax
+		push ebx
 
 		; enable write protect for testing page faults
 		mov edx, cr0
 		bts edx, 16
 		mov cr0, edx
-		extern kernel_main
-		call kernel_main
 
-		extern asm_halt
-		jmp asm_halt
+		; jump to the kernel proper
+		pop ebx
+		pop eax
+		extern kernel_main
+		jmp kernel_main
 	.end:

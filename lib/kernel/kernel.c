@@ -11,8 +11,12 @@
 #include "isr.h"
 #include "kernel.h"
 
+void shutdown(void) {
+	write_port(0xF4, 0);
+}
+
 void handle_interrupt(isr_stack_frame *s) {
-	if(s->int_no < 0x20) {
+	if (s->int_no < 0x20) {
 		serial_writeint16(s->int_no);
 		serial_writestring(" exception\n");
 	}
@@ -86,6 +90,9 @@ void kernel_handlechar(key_press kp) {
 	if (outchar == 'h' && kp.control) {
 		// halt on ctrl + h
 		abort("HALT SIGNAL RECEIVED!\n");
+	} else if (outchar == 's' && kp.control) {
+		// shutdown on ctrl + s
+		shutdown();
 	} else if (outchar == 'c' && kp.control) {
 		// clear the screen on ctrl + c
 		terminal_putchar('\f');
@@ -128,28 +135,114 @@ void init_paging(void) {
 	// add the page table ass the first entry in the page directory
 	page_dir[0] = (uintptr_t)&page_tab | PAGE_PRESENT | PAGE_WRITABLE;
 	// identity map the first 2 MiB
-	for(size_t i = 0; i < 512; ++i) {
+	for (size_t i = 0; i < 512; ++i) {
 		page_tab[i] = (i * 0x1000) | PAGE_PRESENT | PAGE_WRITABLE;
 	}
 	asm_init_paging((uintptr_t)&page_dir_tab);
 	serial_writestring("paging initialized\n");
 }
 
+multiboot_info mbi;
+void read_mbi(uint32_t* ptr) {
+	uint32_t flags = ptr[0];
+	if (flags & 1) {
+		mbi.mem_present = true;
+		mbi.mem_lower = ptr[1];
+		mbi.mem_upper = ptr[2];
+		serial_writestring("Memory: ");
+		serial_writeint10(mbi.mem_upper / 1024 + 1);
+		serial_writestring(" MiB\n");
+	}
+	if ((flags >> 1) & 1) {
+		mbi.bootdev_present = true;
+		mbi.bootdev = (uint8_t*)&ptr[3];
+		serial_writestring("Boot Drive: ");
+		serial_writeint16(mbi.bootdev[3]);
+		serial_putchar('\n');
+	}
+	if ((flags >> 2) & 1) {
+		mbi.cmdline_present = true;
+		mbi.cmdline = (char*)ptr[4];
+		serial_writestring("Kernel Params: ");
+		serial_writestring(mbi.cmdline);
+		serial_putchar('\n');
+	}
+	if ((flags >> 3) & 1) {
+		mbi.mods_present = true;
+		mbi.mods_count = ptr[5];
+		mbi.mods_addr = (uint32_t*)ptr[6];
+		serial_writestring("mods\n");
+	}
+	if ((flags >> 5) & 1) {
+		mbi.elf_syms_present = true;
+		mbi.elf_num = ptr[7];
+		mbi.elf_size = ptr[8];
+		mbi.elf_addr = (uint32_t*)ptr[9];
+		mbi.elf_shndx = ptr[10];
+		serial_writestring("elf syms\n");
+	}
+	if ((flags >> 6) & 1) {
+		mbi.mmap_present = true;
+		mbi.mmap_len = ptr[11];
+		mbi.mmap_addr = (uint32_t*)ptr[12];
+		serial_writestring("mmap\n");
+	}
+	if ((flags >> 7) & 1) {
+		mbi.drives_present = true;
+		mbi.drives_len = ptr[13];
+		mbi.drives_addr = (uint32_t*)ptr[14];
+		serial_writestring("drives\n");
+	}
+	if ((flags >> 8) & 1) {
+		mbi.config_present = true;
+		mbi.config_addr = (uint32_t*)ptr[15];
+		serial_writestring("config\n");
+	}
+	if ((flags >> 9) & 1) {
+		mbi.loader_name_present = true;
+		mbi.loader_name = (char*)ptr[16];
+		serial_writestring("Loader Name: ");
+		serial_writestring(mbi.loader_name);
+		serial_putchar('\n');
+	}
+	if ((flags >> 10) & 1) {
+		mbi.apm_present = true;
+		mbi.apm_addr = (uint32_t*)ptr[17];
+		serial_writestring("apm\n");
+	}
+	if ((flags >> 11) & 1) {
+		mbi.vbe_present = true;
+		mbi.vbe_control_info = ptr[18];
+		mbi.vbe_mode_info = ptr[19];
+		uint16_t* ptr1 = (uint16_t*)&ptr[19];
+		mbi.vbe_mode = ptr1[0];
+		mbi.vbe_interface_seg = ptr1[1];
+		mbi.vbe_interface_offs = ptr1[2];
+		mbi.vbe_interface_len = ptr1[3];
+		serial_writestring("vbe\n");
+	}
+}
+
 void kernel_main(void) {
 	// save the inital eax value for later comparison
 	uint32_t eax = get_eax();
+	uint32_t* ebx = (uint32_t*)get_ebx();
 
 	// initialize serial first because a lot of debugging stuff uses it
 	serial_init();
+
+	// parse the multiboot structure
+	read_mbi(ebx);
+
 	terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	terminal_init();
 	serial_writestring("terminal initialized\n");
 
 	// do some checks to make sure we can fully boot
-	if (eax != 0x36D76289) {
-		abort("multiboot2 magic number not found\n");
+	if (eax != 0x2BADB002) {
+		abort("multiboot magic number not found\n");
 	} else {
-		serial_writestring("multiboot2 magic number found\n");
+		serial_writestring("multiboot magic number found\n");
 	}
 	if (!cpuid_supported()) {
 		abort("CPUID not supported\n");
@@ -188,17 +281,11 @@ void kernel_main(void) {
 	idt_init(idt);
 	load_idt(idt);
 
-	timer_init(100);
+	timer_init(1000);
 	kb_init(&kernel_handlechar);
 
 	enable_interrupt(KEYBOARD_INT_VEC);
 	enable_interrupt(PIT_INT_VEC);
 
-	for (int i = 0; 0; ++i) {
-		terminal_writeint10(millis());
-		terminal_putchar('\n');
-		sleep(1000);
-	}
-
-	while (1);
+	while(true);
 }

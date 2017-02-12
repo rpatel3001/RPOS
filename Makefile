@@ -1,6 +1,6 @@
 CC=i686-elf-gcc
 
-QEMU=qemu-system-i386 -cdrom build/rpos.iso -serial stdio -d guest_errors
+QEMU=qemu-system-i386 -drive media=disk,format=raw,file=build/rpos.img -serial stdio -d guest_errors -m 64 -device isa-debug-exit,iobase=0xf4,iosize=0x04
 
 CFLAGS?= -ggdb3 -std=gnu11
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -isystem lib
@@ -18,11 +18,11 @@ rpos.iso: rpos.bin
 	mkdir -p build/isodir/boot/grub
 	cp build/rpos.bin build/isodir/boot/rpos.bin
 	cp grub.cfg build/isodir/boot/grub/grub.cfg
-	grub-mkrescue -o build/rpos.iso build/isodir
+	grub-mkrescue -o build/rpos.img build/isodir
 
 rpos.bin: $(LIBOBJ)
 	$(CC) $(CFLAGS) -nostdlib -lgcc -T linker.ld -o build/rpos.bin $(LIBOBJ)
-	grub-file --is-x86-multiboot2 build/rpos.bin
+	grub-file --is-x86-multiboot build/rpos.bin
 
 build/%.asm.o: %.asm
 	mkdir -p $(dir $@)

@@ -26,5 +26,5 @@ uint32_t millis(void) {
 
 void sleep(uint32_t m) {
 	uint32_t start = millis();
-	while(millis() < start + m);
+	while (millis() < start + m);
 }

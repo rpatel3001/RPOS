@@ -83,12 +83,12 @@ static char nibbleToHex(uint8_t c) {
 //write an integer with radix 16
 void serial_writeint16(uint64_t data) {
 	if (!data) {
-		serial_writestring("0x00");
+		serial_writestring("0x0");
 	} else {
 		char buf[11];
 		size_t index = 10;
 		buf[index] = 0;
-		for (int i = 0; i < 8 && (data || index % 2 == 1); ++i) {
+		for (int i = 0; i < 8 && data; ++i) {
 			buf[--index] = nibbleToHex(data & 0xF);
 			data >>= 4;
 		}
