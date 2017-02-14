@@ -125,20 +125,6 @@ void kernel_handlechar(key_press kp) {
 	}
 }
 
-#define HUGE_PAGE (1 << 7)
-#define PAGE_WRITABLE (1 << 1)
-#define PAGE_PRESENT  (1 << 0)
-uint64_t page_dir_tab[4] __attribute__((aligned(0x20)));
-uint64_t page_dir[512] __attribute__((aligned(0x1000)));
-void init_paging(void) {
-	// add the page directory as the first entry in the page directory table
-	page_dir_tab[0] = (uintptr_t)&page_dir | PAGE_PRESENT;
-	// the first page directory entry points to a huge page mapping the first 2 MiB
-	page_dir[0] = 0 | PAGE_PRESENT | PAGE_WRITABLE | HUGE_PAGE;
-	asm_init_paging((uintptr_t)&page_dir_tab);
-	serial_writestring("Paging Initialized\n");
-}
-
 multiboot_info mbi;
 void read_mbi(uint32_t* ptr) {
 	uint32_t flags = ptr[0];
@@ -263,8 +249,6 @@ void kernel_main(void) {
 	} else {
 		serial_writestring("CPUID supported\n");
 	}
-
-	init_paging();
 
 	// enable ISRs
 	IDT_entry idt[IDT_SIZE];

@@ -16,21 +16,6 @@ asm_load_idt:
     sti
     ret
 
-global asm_init_paging:function
-asm_init_paging:
-    ; enable PAE
-    mov eax, cr4
-    bts eax, 5
-    mov cr4, eax
-    ; load the page directory table
-    mov eax, [esp + 4]
-    mov cr3, eax
-    ; enable paging
-    mov eax, cr0
-    bts eax, 31
-    mov cr0, eax
-    ret
-
 ; check if CPUID is supported
 global cpuid_supported:function
 cpuid_supported:

@@ -12,10 +12,19 @@ align 4
 	header_end:
 
 section .bss
-align 4
+; stack space
+alignb 16
 	stack_bottom:
 		resb 16384 ; 16 KiB
 	stack_top:
+
+; paging structures
+alignb 32
+	boot_PDP:
+		resq 4
+alignb 4096
+	boot_PD:
+		resq 512
 
 section .text
 bits 32
@@ -26,6 +35,25 @@ bits 32
 		push eax
 		push ebx
 
+		; set up and enable paging
+		; put the initial page directory into the page directory pointer table
+		mov edx, boot_PD
+		bts edx, 0
+		mov [boot_PDP], edx
+		; mark the first page as a 2 MiB huge page starting at 0x0
+		mov edx, 0x83
+		mov [boot_PD], edx
+		; enable PAE
+		mov edx, cr4
+		bts edx, 5
+		mov cr4, edx
+		; load the page directory pointer table
+		mov edx, boot_PDP
+		mov cr3, edx
+		; enable paging
+		mov edx, cr0
+		bts edx, 31
+		mov cr0, edx
 		; enable write protect for testing page faults
 		mov edx, cr0
 		bts edx, 16
