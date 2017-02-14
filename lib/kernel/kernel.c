@@ -89,16 +89,17 @@ void kernel_handlechar(key_press kp) {
 
 	if (outchar == 'h' && kp.control) {
 		// halt on ctrl + h
-		abort("HALT SIGNAL RECEIVED!\n");
+		abort("Halt signal received!\n");
 	} else if (outchar == 's' && kp.control) {
 		// shutdown on ctrl + s
+		serial_writestring("Shutdown signal received!\n");
 		shutdown();
 	} else if (outchar == 'c' && kp.control) {
 		// clear the screen on ctrl + c
 		terminal_putchar('\f');
 	} else if (!outchar) {
 		// don't do anything if the key isn't printable
-		serial_writestring("couldn't print character\n");
+		serial_writestring("Couldn't print character\n");
 		return;
 	} else {
 		// print to terminal, add to linebuffer, and print to serial if it's a full line
@@ -124,20 +125,16 @@ void kernel_handlechar(key_press kp) {
 	}
 }
 
-#define PAGE_WRITABLE 2
-#define PAGE_PRESENT  1
+#define HUGE_PAGE (1 << 7)
+#define PAGE_WRITABLE (1 << 1)
+#define PAGE_PRESENT  (1 << 0)
 uint64_t page_dir_tab[4] __attribute__((aligned(0x20)));
 uint64_t page_dir[512] __attribute__((aligned(0x1000)));
-uint64_t page_tab[512] __attribute__((aligned(0x1000)));
 void init_paging(void) {
 	// add the page directory as the first entry in the page directory table
 	page_dir_tab[0] = (uintptr_t)&page_dir | PAGE_PRESENT;
-	// add the page table ass the first entry in the page directory
-	page_dir[0] = (uintptr_t)&page_tab | PAGE_PRESENT | PAGE_WRITABLE;
-	// identity map the first 2 MiB
-	for (size_t i = 0; i < 512; ++i) {
-		page_tab[i] = (i * 0x1000) | PAGE_PRESENT | PAGE_WRITABLE;
-	}
+	// the first page directory entry points to a huge page mapping the first 2 MiB
+	page_dir[0] = 0 | PAGE_PRESENT | PAGE_WRITABLE | HUGE_PAGE;
 	asm_init_paging((uintptr_t)&page_dir_tab);
 	serial_writestring("Paging Initialized\n");
 }

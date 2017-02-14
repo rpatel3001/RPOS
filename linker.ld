@@ -5,11 +5,10 @@ KERNEL_LMA = 1M;
 
 SECTIONS
 {
-	/* Begin putting sections at 1 MiB, a conventional place for kernels to be
-	   loaded at by the bootloader. */
 	. = KERNEL_VMA_OFFS;
 	. += KERNEL_LMA;
 	kernel_start = .;
+	
 	.multiboot ALIGN(4K) : AT(ADDR(.multiboot)-KERNEL_VMA_OFFS)
 	{
 		*(.multiboot)
