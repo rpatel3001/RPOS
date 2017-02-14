@@ -26,6 +26,8 @@ alignb 4096
 	boot_PD:
 		resq 512
 
+extern kernel_main
+extern KERNEL_VMA_OFFS
 section .text
 bits 32
 	global _start:function
@@ -62,6 +64,6 @@ bits 32
 		; jump to the kernel proper
 		pop ebx
 		pop eax
-		extern kernel_main
-		jmp kernel_main
+		lea edx, [kernel_main]
+		jmp edx
 	.end:

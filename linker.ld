@@ -1,14 +1,13 @@
 ENTRY(_start)
 
-KERNEL_VMA_OFFS = 0;
+KERNEL_VMA_OFFS = 0x0000000;
 KERNEL_LMA = 1M;
 
 SECTIONS
 {
 	. = KERNEL_VMA_OFFS;
 	. += KERNEL_LMA;
-	kernel_start = .;
-	
+
 	.multiboot ALIGN(4K) : AT(ADDR(.multiboot)-KERNEL_VMA_OFFS)
 	{
 		*(.multiboot)
