@@ -206,9 +206,10 @@ void read_mbi(uint32_t* ptr) {
 	}
 }
 
-extern char kernel_end[];
+extern char KERNEL_END[];
 extern char KERNEL_VMA_OFFS[];
 extern char KERNEL_LMA[];
+extern char KERNEL_VMA[];
 void kernel_main(void) {
 	// save the inital eax value for later comparison
 	uint32_t eax = get_eax();
@@ -222,7 +223,7 @@ void kernel_main(void) {
 	read_mbi(ebx);
 
 	serial_writestring("Kernel Size: ");
-	serial_writeint10((kernel_end - KERNEL_LMA)/1024);
+	serial_writeint10((KERNEL_END - KERNEL_VMA)/1024);
 	serial_writestring(" KiB\n");
 
 	serial_writestring("Kernel Loaded At: ");

@@ -7,6 +7,7 @@ SECTIONS
 {
 	. = KERNEL_VMA_OFFS;
 	. += KERNEL_LMA;
+	KERNEL_VMA = .;
 
 	.multiboot ALIGN(4K) : AT(ADDR(.multiboot)-KERNEL_VMA_OFFS)
 	{
@@ -36,5 +37,5 @@ SECTIONS
 		*(COMMON)
 		*(.bss)
 	}
-	kernel_end = .;
+	KERNEL_END = .;
 }

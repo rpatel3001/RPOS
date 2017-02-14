@@ -25,6 +25,8 @@ alignb 32
 alignb 4096
 	boot_PD:
 		resq 512
+	higher_PD:
+		resq 512
 
 extern kernel_main
 extern KERNEL_VMA_OFFS
@@ -45,6 +47,7 @@ bits 32
 		; mark the first page as a 2 MiB huge page starting at 0x0
 		mov edx, 0x83
 		mov [boot_PD], edx
+		; set up a page at 0xC0000000
 		; enable PAE
 		mov edx, cr4
 		bts edx, 5
