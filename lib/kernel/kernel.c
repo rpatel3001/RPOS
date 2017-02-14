@@ -139,7 +139,7 @@ void init_paging(void) {
 		page_tab[i] = (i * 0x1000) | PAGE_PRESENT | PAGE_WRITABLE;
 	}
 	asm_init_paging((uintptr_t)&page_dir_tab);
-	serial_writestring("paging initialized\n");
+	serial_writestring("Paging Initialized\n");
 }
 
 multiboot_info mbi;
@@ -171,7 +171,7 @@ void read_mbi(uint32_t* ptr) {
 		mbi.mods_present = true;
 		mbi.mods_count = ptr[5];
 		mbi.mods_addr = (uint32_t*)ptr[6];
-		serial_writestring("mods\n");
+		serial_writestring("Module info present\n");
 	}
 	if ((flags >> 5) & 1) {
 		mbi.elf_syms_present = true;
@@ -179,24 +179,24 @@ void read_mbi(uint32_t* ptr) {
 		mbi.elf_size = ptr[8];
 		mbi.elf_addr = (uint32_t*)ptr[9];
 		mbi.elf_shndx = ptr[10];
-		serial_writestring("elf syms\n");
+		serial_writestring("ELF syms present\n");
 	}
 	if ((flags >> 6) & 1) {
 		mbi.mmap_present = true;
 		mbi.mmap_len = ptr[11];
 		mbi.mmap_addr = (uint32_t*)ptr[12];
-		serial_writestring("mmap\n");
+		serial_writestring("Memory map info present\n");
 	}
 	if ((flags >> 7) & 1) {
 		mbi.drives_present = true;
 		mbi.drives_len = ptr[13];
 		mbi.drives_addr = (uint32_t*)ptr[14];
-		serial_writestring("drives\n");
+		serial_writestring("Drives info present\n");
 	}
 	if ((flags >> 8) & 1) {
 		mbi.config_present = true;
 		mbi.config_addr = (uint32_t*)ptr[15];
-		serial_writestring("config\n");
+		serial_writestring("Config table present\n");
 	}
 	if ((flags >> 9) & 1) {
 		mbi.loader_name_present = true;
@@ -208,7 +208,7 @@ void read_mbi(uint32_t* ptr) {
 	if ((flags >> 10) & 1) {
 		mbi.apm_present = true;
 		mbi.apm_addr = (uint32_t*)ptr[17];
-		serial_writestring("apm\n");
+		serial_writestring("APM table present\n");
 	}
 	if ((flags >> 11) & 1) {
 		mbi.vbe_present = true;
@@ -219,13 +219,18 @@ void read_mbi(uint32_t* ptr) {
 		mbi.vbe_interface_seg = ptr1[1];
 		mbi.vbe_interface_offs = ptr1[2];
 		mbi.vbe_interface_len = ptr1[3];
-		serial_writestring("vbe\n");
+		serial_writestring("VBE data present\n");
 	}
 }
 
+extern char kernel_start[];
+extern char kernel_end[];
+extern char KERNEL_VMA_OFFS[];
+extern char KERNEL_LMA[];
 void kernel_main(void) {
 	// save the inital eax value for later comparison
 	uint32_t eax = get_eax();
+	// save ebx so we can parse the multiboot structure
 	uint32_t* ebx = (uint32_t*)get_ebx();
 
 	// initialize serial first because a lot of debugging stuff uses it
@@ -234,18 +239,30 @@ void kernel_main(void) {
 	// parse the multiboot structure
 	read_mbi(ebx);
 
+	serial_writestring("Kernel Size: ");
+	serial_writeint10((kernel_end - kernel_start)/1024);
+	serial_writestring(" KiB\n");
+
+	serial_writestring("Kernel Loaded At: ");
+	serial_writeint16((uintptr_t)KERNEL_LMA);
+	serial_putchar('\n');
+
+	serial_writestring("Kernel Mapped To: ");
+	serial_writeint16((uintptr_t)KERNEL_LMA + (uintptr_t)KERNEL_VMA_OFFS);
+	serial_putchar('\n');
+
 	terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	terminal_init();
-	serial_writestring("terminal initialized\n");
+	serial_writestring("Terminal Initialized\n");
 
 	// do some checks to make sure we can fully boot
 	if (eax != 0x2BADB002) {
-		abort("multiboot magic number not found\n");
+		abort("Multiboot magic number not found!\n");
 	} else {
-		serial_writestring("multiboot magic number found\n");
+		serial_writestring("Multiboot magic number found\n");
 	}
 	if (!cpuid_supported()) {
-		abort("CPUID not supported\n");
+		abort("CPUID not supported!\n");
 	} else {
 		serial_writestring("CPUID supported\n");
 	}

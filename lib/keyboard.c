@@ -166,5 +166,5 @@ void keyboard_ISR(void) {
 //initialize the keyboard
 void kb_init(void (*handler)(key_press)) {
 	callback = handler;
-	serial_writestring("keyboard initialized\n");
+	serial_writestring("Keyboard Initialized\n");
 }
