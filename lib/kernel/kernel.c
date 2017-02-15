@@ -206,24 +206,16 @@ void read_mbi(uint32_t* ptr) {
 	}
 }
 
-extern char KERNEL_END[];
-extern char KERNEL_VMA_OFFS[];
-extern char KERNEL_LMA[];
-extern char KERNEL_VMA[];
-void kernel_main(void) {
-	// save the inital eax value for later comparison
-	uint32_t eax = get_eax();
-	// save ebx so we can parse the multiboot structure
-	uint32_t* ebx = (uint32_t*)get_ebx();
-
+void kernel_main(uint32_t eax, uint32_t ebx) {
 	// initialize serial first because a lot of debugging stuff uses it
 	serial_init();
+	serial_writestring("\nBooting RPOS\n");
 
 	// parse the multiboot structure
-	read_mbi(ebx);
+	read_mbi((uint32_t*)(ebx + KERNEL_VMA_OFFS));
 
 	serial_writestring("Kernel Size: ");
-	serial_writeint10((KERNEL_END - KERNEL_VMA)/1024);
+	serial_writeint10((KERNEL_END - KERNEL_VMA) / 1024);
 	serial_writestring(" KiB\n");
 
 	serial_writestring("Kernel Loaded At: ");
@@ -231,7 +223,7 @@ void kernel_main(void) {
 	serial_putchar('\n');
 
 	serial_writestring("Kernel Mapped To: ");
-	serial_writeint16((uintptr_t)KERNEL_LMA + (uintptr_t)KERNEL_VMA_OFFS);
+	serial_writeint16((uintptr_t)KERNEL_VMA);
 	serial_putchar('\n');
 
 	terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
@@ -285,5 +277,5 @@ void kernel_main(void) {
 	enable_interrupt(KEYBOARD_INT_VEC);
 	enable_interrupt(PIT_INT_VEC);
 
-	while(true);
+	while (true);
 }

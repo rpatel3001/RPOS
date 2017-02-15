@@ -51,6 +51,12 @@ typedef struct multiboot_info {
 	uint32_t vbe_interface_len;
 } multiboot_info;
 
+//symbols from the linker script
+extern char KERNEL_END[];
+extern char KERNEL_VMA_OFFS[];
+extern char KERNEL_LMA[];
+extern char KERNEL_VMA[];
+
 // load the ISR
 void asm_load_idt(uintptr_t *idt_ptr);
 
