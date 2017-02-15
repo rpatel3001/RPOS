@@ -46,9 +46,9 @@ typedef struct multiboot_info {
 	uint32_t vbe_control_info;
 	uint32_t vbe_mode_info;
 	uint16_t vbe_mode;
-	uint32_t vbe_interface_seg;
-	uint32_t vbe_interface_offs;
-	uint32_t vbe_interface_len;
+	uint16_t vbe_interface_seg;
+	uint16_t vbe_interface_offs;
+	uint16_t vbe_interface_len;
 } multiboot_info;
 
 //symbols from the linker script

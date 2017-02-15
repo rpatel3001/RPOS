@@ -12,6 +12,12 @@ align 4
 	header_end:
 
 section .bss
+alignb 4096
+	boot_PD:
+		resq 512
+	higher_PD:
+		resq 512
+
 ; stack space
 alignb 16
 	stack_bottom:
@@ -22,11 +28,6 @@ alignb 16
 alignb 32
 	boot_PDP:
 		resq 4
-alignb 4096
-	boot_PD:
-		resq 512
-	higher_PD:
-		resq 512
 
 extern KERNEL_VMA_OFFS
 section .text
@@ -58,8 +59,7 @@ bits 32
 		sub ecx, KERNEL_VMA_OFFS
 		mov [ecx], edx
 
-		; also set up a page at 0xC0000000 that points to 0x0
-		; insert the 3rd page directory (3GiB+)
+		; also set up a page at the higher half address that points to 0x0
 		mov edx, higher_PD
 		sub edx, KERNEL_VMA_OFFS
 		bts edx, 0
@@ -92,7 +92,6 @@ bits 32
 		sub edx, KERNEL_VMA_OFFS
 		mov cr3, edx
 
-		; pop off the multiboot information
 		pop ebx
 		pop eax
 
@@ -104,24 +103,18 @@ bits 32
 		; reset the stack to the virtual address
 		mov esp, stack_top
 
-		; push multiboot registers
-		push eax
-		push ebx
-
 		; enable write protect for testing page faults
 		mov edx, cr0
-		bts edx, 16
+		bts edx, 16 
 		mov cr0, edx
 
-		; invalidate the identity mapping
-		;mov dword [boot_PDP], 0
-		;mov dword [boot_PDP + 4], 0
-		;mov dword [boot_PD], 0
-		;mov dword [boot_PD + 4], 0
-		;invlpg [0]
+		push ebx
+		push eax
+		; need to push an extra value for kernel_main's parameter to be right
+		; will look into this later
+		push 0
 
 		; jump to the kernel proper
 		extern kernel_main
-		lea ecx, [kernel_main]
-		jmp ecx
+		jmp kernel_main
 	.end:

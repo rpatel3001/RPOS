@@ -86,7 +86,6 @@ char linebuffer[VGA_WIDTH+1];
 size_t line_index = 0;
 void kernel_handlechar(key_press kp) {
 	char outchar = key_to_char(kp);
-
 	if (outchar == 'h' && kp.control) {
 		// halt on ctrl + h
 		abort("Halt signal received!\n");
@@ -128,6 +127,9 @@ void kernel_handlechar(key_press kp) {
 multiboot_info mbi;
 void read_mbi(uint32_t* ptr) {
 	uint32_t flags = ptr[0];
+	serial_writestring("Flags: ");
+	serial_writeint16(flags);
+	serial_putchar('\n');
 	if (flags & 1) {
 		mbi.mem_present = true;
 		mbi.mem_lower = ptr[1];
@@ -206,13 +208,13 @@ void read_mbi(uint32_t* ptr) {
 	}
 }
 
-void kernel_main(uint32_t eax, uint32_t ebx) {
+void kernel_main(uint32_t eax, uint32_t* ebx) {
 	// initialize serial first because a lot of debugging stuff uses it
 	serial_init();
 	serial_writestring("\nBooting RPOS\n");
 
 	// parse the multiboot structure
-	read_mbi((uint32_t*)(ebx + KERNEL_VMA_OFFS));
+	read_mbi(ebx);
 
 	serial_writestring("Kernel Size: ");
 	serial_writeint10((KERNEL_END - KERNEL_VMA) / 1024);
