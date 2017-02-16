@@ -1,14 +1,27 @@
 ; Declare constants for the multiboot header.
 MAGIC    equ 0x1BADB002
-FLAGS    equ 0
+; flags to 4K align the kernel, provide memory info, and provide graphics info
+FLAGS    equ 0x00000007
 CHECKSUM equ -(MAGIC + FLAGS)
 
 section .multiboot
 align 4
 	header_start:
+		; required entries
 		dd MAGIC
 		dd FLAGS
 		dd CHECKSUM
+		; filler addr fields
+		times 5 dd 0
+		; preferred graphics info
+		; mode: 0 = graphics, 1 = text
+		dd 1
+		; width
+		dd 80
+		; height
+		dd 25
+		; bits per pixel: 0 for text
+		dd 0
 	header_end:
 
 section .bss
