@@ -34,7 +34,7 @@ build/%.c.o: %.c $(LIBINC)
 
 includes:
 	-for target in $(LIB_C_SRC) ; do \
-		include-what-you-use $(CFLAGS) $$target ; \
+		include-what-you-use $(CFLAGS) -Wno-int-to-pointer-cast $$target ; \
 	done
 
 boot:
@@ -45,6 +45,9 @@ clean:
 
 list:
 	tree -I "build|crosscompiler"
+
+todo:
+	grep --exclude-dir=crosscompiler -nR TODO
 
 debug:
 	$(QEMU) -s -S

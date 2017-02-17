@@ -57,6 +57,13 @@ extern char KERNEL_VMA_OFFS[];
 extern char KERNEL_LMA[];
 extern char KERNEL_VMA[];
 
+//kernel page tables
+extern char kernel_PDP[];
+extern char kernel_PD0[];
+extern char kernel_PD1[];
+extern char kernel_PD2[];
+extern char kernel_PD3[];
+
 // load the ISR
 void asm_load_idt(uintptr_t *idt_ptr);
 

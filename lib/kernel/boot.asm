@@ -26,17 +26,22 @@ align 4
 
 section .bss
 alignb 4096
+	global kernel_PD0
 	kernel_PD0:
 		resq 512
+	global kernel_PD1
 	kernel_PD1:
 		resq 512
+	global kernel_PD2
 	kernel_PD2:
 		resq 512
+	global kernel_PD3
 	kernel_PD3:
 		resq 512
 
 ; paging structures
 alignb 32
+	global kernel_PDP
 	kernel_PDP:
 		resq 4
 
@@ -147,7 +152,7 @@ bits 32
 		push ebx
 		push eax
 		; need to push an extra value for kernel_main's parameter to be right
-		; will look into this later
+		; TODO will look into this later
 		push 0
 
 		; jump to the kernel proper

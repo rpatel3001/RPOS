@@ -8,8 +8,8 @@
 #include <util.h>
 #include <kernel/interrupt.h>
 #include <timer.h>
-#include "isr.h"
-#include "kernel.h"
+#include <kernel/isr.h>
+#include <kernel/kernel.h>
 
 void shutdown(void) {
 	write_port(0xF4, 0);
