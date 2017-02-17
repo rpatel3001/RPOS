@@ -220,11 +220,11 @@ void kernel_main(uint32_t eax, uint32_t* ebx) {
 	serial_writeint10((KERNEL_END - KERNEL_VMA) / 1024);
 	serial_writestring(" KiB\n");
 
-	serial_writestring("Kernel Loaded At: ");
+	serial_writestring("Kernel LMA: ");
 	serial_writeint16((uintptr_t)KERNEL_LMA);
 	serial_putchar('\n');
 
-	serial_writestring("Kernel Mapped To: ");
+	serial_writestring("Kernel VMA: ");
 	serial_writeint16((uintptr_t)KERNEL_VMA);
 	serial_putchar('\n');
 

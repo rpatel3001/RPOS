@@ -26,21 +26,25 @@ align 4
 
 section .bss
 alignb 4096
-	boot_PD:
+	kernel_PD0:
 		resq 512
-	higher_PD:
+	kernel_PD1:
 		resq 512
+	kernel_PD2:
+		resq 512
+	kernel_PD3:
+		resq 512
+
+; paging structures
+alignb 32
+	kernel_PDP:
+		resq 4
 
 ; stack space
 alignb 16
 	stack_bottom:
 		resb 16384 ; 16 KiB
 	stack_top:
-
-; paging structures
-alignb 32
-	boot_PDP:
-		resq 4
 
 extern KERNEL_VMA_OFFS
 section .text
@@ -58,42 +62,61 @@ bits 32
 		; UNTIL WE ENABLE PAGING, EVERYTHING MUST BE A PHYSICAL ADDRESS
 		; HENCE WE SUBTRACT THE OFFSET FROM ALL ADDRESSES
 		; set up and enable paging
-		; put the initial page directory into the page directory pointer table
-		mov edx, boot_PD
+		; put the kernel page directories into the kernel page directory pointer table
+		; kernel_PD0
+		mov edx, kernel_PD0
 		sub edx, KERNEL_VMA_OFFS
 		bts edx, 0
-		mov ecx, boot_PDP
+		mov ecx, kernel_PDP
 		sub ecx, KERNEL_VMA_OFFS
 		mov [ecx], edx
+		; kernel_PD1
+		mov edx, kernel_PD1
+		sub edx, KERNEL_VMA_OFFS
+		bts edx, 0
+		mov ecx, kernel_PDP
+		sub ecx, KERNEL_VMA_OFFS
+		mov [ecx+8], edx
+		; kernel_PD2
+		mov edx, kernel_PD2
+		sub edx, KERNEL_VMA_OFFS
+		bts edx, 0
+		mov ecx, kernel_PDP
+		sub ecx, KERNEL_VMA_OFFS
+		mov [ecx+16], edx
+		; kernel_PD3
+		mov edx, kernel_PD3
+		sub edx, KERNEL_VMA_OFFS
+		bts edx, 0
+		mov ecx, kernel_PDP
+		sub ecx, KERNEL_VMA_OFFS
+		mov [ecx+24], edx
 
 		; mark the first page as a 2 MiB huge page starting at 0x0
-		mov edx, 0x83
-		mov ecx, boot_PD
-		sub ecx, KERNEL_VMA_OFFS
-		mov [ecx], edx
+		mov edx, kernel_PD0
+		sub edx, KERNEL_VMA_OFFS
+		mov dword [edx], 0x83
 
 		; also set up a page at the higher half address that points to 0x0
-		mov edx, higher_PD
-		sub edx, KERNEL_VMA_OFFS
-		bts edx, 0
-		mov ecx, boot_PDP
-		sub ecx, KERNEL_VMA_OFFS
-
 		; calculate which PDP entry to insert into
 		mov eax, KERNEL_VMA_OFFS
 		shr eax, 30
-		mov [ecx + eax * 8], edx
-
-		; insert the first (huge) page of the 3rd page directory
-		mov edx, 0x83
-		mov ecx, higher_PD
+		; calculate address of the PD we need
+		imul ebx, eax, 4096
+		mov edx, kernel_PD0
+		sub edx, KERNEL_VMA_OFFS
+		add edx, ebx
+		bts edx, 0
+		; load the PD into the PDP
+		mov ecx, kernel_PDP
 		sub ecx, KERNEL_VMA_OFFS
-		
+		mov [ecx + eax * 8], edx
 		; calculate which PD page to use
 		mov eax, KERNEL_VMA_OFFS
 		shr eax, 21
 		and eax, 0x1FF
-		mov [ecx + eax * 8], edx
+		; insert the first page of the 3rd page directory
+		mov dword [edx + eax * 8 - 1], 0x83
 
 		; enable PAE
 		mov edx, cr4
@@ -101,7 +124,7 @@ bits 32
 		mov cr4, edx
 
 		; load the page directory pointer table
-		mov edx, boot_PDP
+		mov edx, kernel_PDP
 		sub edx, KERNEL_VMA_OFFS
 		mov cr3, edx
 
@@ -129,5 +152,7 @@ bits 32
 
 		; jump to the kernel proper
 		extern kernel_main
-		jmp kernel_main
+		lea ecx, [kernel_main]
+		jmp ecx
+	halt: hlt
 	.end:
