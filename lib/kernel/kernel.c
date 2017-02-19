@@ -68,14 +68,6 @@ void handle_interrupt(isr_stack_frame *s) {
 	send_eoi(s->int_no);
 }
 
-void add_isr(IDT_entry idt[IDT_SIZE], size_t vec, uintptr_t isr) {
-	idt[vec].offset_lowerbits = isr & 0xffff;
-	idt[vec].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
-	idt[vec].zero = 0;
-	idt[vec].type_attr = 0x8e; /* INTERRUPT_GATE */
-	idt[vec].offset_higherbits = (isr >> 16) & 0xffff;
-}
-
 // translate a scancode into an ascii character
 char key_to_char(key_press kp) {
 	return keymap[kp.keycode][kp.shift ? 1 : 0];
@@ -147,7 +139,7 @@ void read_mbi(uint32_t* ptr) {
 	}
 	if ((flags >> 2) & 1) {
 		mbi.cmdline_present = true;
-		mbi.cmdline = (char*)ptr[4];
+		mbi.cmdline = (char*)(ptr[4] + KERNEL_VMA_OFFS);
 		serial_writestring("Kernel Params: ");
 		serial_writestring(mbi.cmdline);
 		serial_putchar('\n');
@@ -155,44 +147,44 @@ void read_mbi(uint32_t* ptr) {
 	if ((flags >> 3) & 1) {
 		mbi.mods_present = true;
 		mbi.mods_count = ptr[5];
-		mbi.mods_addr = (uint32_t*)ptr[6];
+		mbi.mods_addr = (uint32_t*)(ptr[6] + KERNEL_VMA_OFFS);
 		serial_writestring("Module info present\n");
 	}
 	if ((flags >> 5) & 1) {
 		mbi.elf_syms_present = true;
 		mbi.elf_num = ptr[7];
 		mbi.elf_size = ptr[8];
-		mbi.elf_addr = (uint32_t*)ptr[9];
+		mbi.elf_addr = (uint32_t*)(ptr[9] + KERNEL_VMA_OFFS);
 		mbi.elf_shndx = ptr[10];
 		serial_writestring("ELF syms present\n");
 	}
 	if ((flags >> 6) & 1) {
 		mbi.mmap_present = true;
 		mbi.mmap_len = ptr[11];
-		mbi.mmap_addr = (uint32_t*)ptr[12];
+		mbi.mmap_addr = (uint32_t*)(ptr[12] + KERNEL_VMA_OFFS);
 		serial_writestring("Memory map info present\n");
 	}
 	if ((flags >> 7) & 1) {
 		mbi.drives_present = true;
 		mbi.drives_len = ptr[13];
-		mbi.drives_addr = (uint32_t*)ptr[14];
+		mbi.drives_addr = (uint32_t*)(ptr[14] + KERNEL_VMA_OFFS);
 		serial_writestring("Drives info present\n");
 	}
 	if ((flags >> 8) & 1) {
 		mbi.config_present = true;
-		mbi.config_addr = (uint32_t*)ptr[15];
+		mbi.config_addr = (uint32_t*)(ptr[15] + KERNEL_VMA_OFFS);
 		serial_writestring("Config table present\n");
 	}
 	if ((flags >> 9) & 1) {
 		mbi.loader_name_present = true;
-		mbi.loader_name = (char*)ptr[16];
+		mbi.loader_name = (char*)(ptr[16] + KERNEL_VMA_OFFS);
 		serial_writestring("Loader Name: ");
 		serial_writestring(mbi.loader_name);
 		serial_putchar('\n');
 	}
 	if ((flags >> 10) & 1) {
 		mbi.apm_present = true;
-		mbi.apm_addr = (uint32_t*)ptr[17];
+		mbi.apm_addr = (uint32_t*)(ptr[17] + KERNEL_VMA_OFFS);
 		serial_writestring("APM table present\n");
 	}
 	if ((flags >> 11) & 1) {
@@ -208,13 +200,25 @@ void read_mbi(uint32_t* ptr) {
 	}
 }
 
-void kernel_main(uint32_t eax, uint32_t* ebx) {
+void kernel_main(uint32_t eax, uint32_t ebx) {
 	// initialize serial first because a lot of debugging stuff uses it
 	serial_init();
 	serial_writestring("\nBooting RPOS\n");
 
+	// do some checks to make sure we can fully boot
+	if (eax != 0x2BADB002) {
+		abort("Multiboot magic number not found!\n");
+	} else {
+		serial_writestring("Multiboot magic number found\n");
+	}
+	if (!cpuid_supported()) {
+		abort("CPUID not supported!\n");
+	} else {
+		serial_writestring("CPUID supported\n");
+	}
+
 	// parse the multiboot structure
-	read_mbi(ebx);
+	read_mbi((uint32_t*)(ebx + KERNEL_VMA_OFFS));
 
 	serial_writestring("Kernel Size: ");
 	serial_writeint10((KERNEL_END - KERNEL_VMA) / 1024);
@@ -232,52 +236,38 @@ void kernel_main(uint32_t eax, uint32_t* ebx) {
 	terminal_init();
 	serial_writestring("Terminal Initialized\n");
 
-	// do some checks to make sure we can fully boot
-	if (eax != 0x2BADB002) {
-		abort("Multiboot magic number not found!\n");
-	} else {
-		serial_writestring("Multiboot magic number found\n");
-	}
-	if (!cpuid_supported()) {
-		abort("CPUID not supported!\n");
-	} else {
-		serial_writestring("CPUID supported\n");
-	}
-
 	// enable ISRs
-	IDT_entry idt[IDT_SIZE];
-	add_isr(idt, 0x00, (uintptr_t)asm_isr_00);
-	add_isr(idt, 0x01, (uintptr_t)asm_isr_01);
-	add_isr(idt, 0x02, (uintptr_t)asm_isr_02);
-	add_isr(idt, 0x03, (uintptr_t)asm_isr_03);
-	add_isr(idt, 0x04, (uintptr_t)asm_isr_04);
-	add_isr(idt, 0x05, (uintptr_t)asm_isr_05);
-	add_isr(idt, 0x06, (uintptr_t)asm_isr_06);
-	add_isr(idt, 0x07, (uintptr_t)asm_isr_07);
-	add_isr(idt, 0x08, (uintptr_t)asm_isr_08);
-	add_isr(idt, 0x0a, (uintptr_t)asm_isr_0a);
-	add_isr(idt, 0x0b, (uintptr_t)asm_isr_0b);
-	add_isr(idt, 0x0c, (uintptr_t)asm_isr_0c);
-	add_isr(idt, 0x0d, (uintptr_t)asm_isr_0d);
-	add_isr(idt, 0x0e, (uintptr_t)asm_isr_0e);
-	add_isr(idt, 0x10, (uintptr_t)asm_isr_10);
-	add_isr(idt, 0x11, (uintptr_t)asm_isr_11);
-	add_isr(idt, 0x12, (uintptr_t)asm_isr_12);
-	add_isr(idt, 0x13, (uintptr_t)asm_isr_13);
-	add_isr(idt, 0x14, (uintptr_t)asm_isr_14);
-	add_isr(idt, 0x1e, (uintptr_t)asm_isr_1e);
+	add_isr(0x00, (uintptr_t)asm_isr_00);
+	add_isr(0x01, (uintptr_t)asm_isr_01);
+	add_isr(0x02, (uintptr_t)asm_isr_02);
+	add_isr(0x03, (uintptr_t)asm_isr_03);
+	add_isr(0x04, (uintptr_t)asm_isr_04);
+	add_isr(0x05, (uintptr_t)asm_isr_05);
+	add_isr(0x06, (uintptr_t)asm_isr_06);
+	add_isr(0x07, (uintptr_t)asm_isr_07);
+	add_isr(0x08, (uintptr_t)asm_isr_08);
+	add_isr(0x0a, (uintptr_t)asm_isr_0a);
+	add_isr(0x0b, (uintptr_t)asm_isr_0b);
+	add_isr(0x0c, (uintptr_t)asm_isr_0c);
+	add_isr(0x0d, (uintptr_t)asm_isr_0d);
+	add_isr(0x0e, (uintptr_t)asm_isr_0e);
+	add_isr(0x10, (uintptr_t)asm_isr_10);
+	add_isr(0x11, (uintptr_t)asm_isr_11);
+	add_isr(0x12, (uintptr_t)asm_isr_12);
+	add_isr(0x13, (uintptr_t)asm_isr_13);
+	add_isr(0x14, (uintptr_t)asm_isr_14);
+	add_isr(0x1e, (uintptr_t)asm_isr_1e);
 
-	add_isr(idt, PIT_INT_VEC, (uintptr_t)asm_isr_20);
-	add_isr(idt, KEYBOARD_INT_VEC, (uintptr_t)asm_isr_21);
+	add_isr(PIT_INT_VEC, (uintptr_t)asm_isr_20);
+	add_isr(KEYBOARD_INT_VEC, (uintptr_t)asm_isr_21);
 
-	idt_init(idt);
-	load_idt(idt);
+	idt_init();
 
 	timer_init(1000);
 	kb_init(&kernel_handlechar);
 
 	enable_interrupt(KEYBOARD_INT_VEC);
-	enable_interrupt(PIT_INT_VEC);
+	//enable_interrupt(PIT_INT_VEC);
 
 	while (true);
 }

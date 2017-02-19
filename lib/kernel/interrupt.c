@@ -7,7 +7,8 @@
 #define PIC1_PORT 0x20
 #define PIC2_PORT 0xA0
 
-IDT_entry IDT[IDT_SIZE];
+extern IDT_entry IDT[IDT_SIZE];
+extern DT_def idt_ptr;
 //initialize the IDT
 void idt_init() {
 	/* ICW1 - begin initialization */
@@ -35,21 +36,17 @@ void idt_init() {
 	write_port(PIC1_PORT + 1, 0xff);
 	write_port(PIC2_PORT + 1, 0xff);
 
-	load_idt(IDT);
+	asm_load_idt(&idt_ptr);
 
 	serial_writestring("PICs initialized\n");
 }
 
-void load_idt(IDT_entry idt[IDT_SIZE]) {
-	memcpy(IDT, idt, sizeof(IDT_entry) * IDT_SIZE);
-	uintptr_t idt_address;
-	uintptr_t idt_ptr[2];
-	/* fill the IDT descriptor */
-	idt_address = (uintptr_t)IDT ;
-	idt_ptr[0] = (sizeof(IDT_entry) * IDT_SIZE) + ((idt_address & 0xffff) << 16);
-	idt_ptr[1] = idt_address >> 16 ;
-
-	asm_load_idt(idt_ptr);
+void add_isr(size_t vec, uintptr_t isr) {
+	IDT[vec].offset_lowerbits = isr & 0xffff;
+	IDT[vec].selector = get_cs(); /* KERNEL_CODE_SEGMENT_OFFSET */
+	IDT[vec].zero = 0;
+	IDT[vec].type_attr = 0x8e; /* INTERRUPT_GATE */
+	IDT[vec].offset_higherbits = isr >> 16;
 }
 
 uint8_t get_interrupt_mask(uint8_t pic) {

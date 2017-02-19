@@ -5,51 +5,62 @@ FLAGS    equ 0x00000007
 CHECKSUM equ -(MAGIC + FLAGS)
 
 section .multiboot
-align 4
-	header_start:
-		; required entries
-		dd MAGIC
-		dd FLAGS
-		dd CHECKSUM
-		; filler addr fields
-		times 5 dd 0
-		; preferred graphics info
-		; mode: 0 = graphics, 1 = text
-		dd 1
-		; width
-		dd 80
-		; height
-		dd 25
-		; bits per pixel: 0 for text
-		dd 0
-	header_end:
+	align 4
+		header_start:
+			; required entries
+			dd MAGIC
+			dd FLAGS
+			dd CHECKSUM
+			; filler addr fields
+			times 5 dd 0
+			; preferred graphics info
+			; mode: 0 = graphics, 1 = text
+			dd 1
+			; width
+			dd 80
+			; height
+			dd 25
+			; bits per pixel: 0 for text
+			dd 0
+		header_end:
 
 section .bss
-alignb 4096
-	global kernel_PD0
-	kernel_PD0:
-		resq 512
-	global kernel_PD1
-	kernel_PD1:
-		resq 512
-	global kernel_PD2
-	kernel_PD2:
-		resq 512
-	global kernel_PD3
-	kernel_PD3:
-		resq 512
+	alignb 4096
+		global kernel_PD0
+		kernel_PD0:
+			resq 512
+		global kernel_PD1
+		kernel_PD1:
+			resq 512
+		global kernel_PD2
+		kernel_PD2:
+			resq 512
+		global kernel_PD3
+		kernel_PD3:
+			resq 512
 
-; paging structures
-alignb 32
-	global kernel_PDP
-	kernel_PDP:
-		resq 4
+	; paging structures
+	alignb 32
+		global kernel_PDP
+		kernel_PDP:
+			resq 4
 
-; stack space
-alignb 16
-	stack_bottom:
-		resb 16384 ; 16 KiB
-	stack_top:
+	; stack space
+	alignb 16
+		stack_bottom:
+			resb 16384 ; 16 KiB
+		stack_top:
+
+		; reserve space for IDT
+		global IDT
+		IDT:
+			resq 256
+
+section .data
+	global idt_ptr
+	idt_ptr:
+		dw 2047
+		dd IDT
 
 extern KERNEL_VMA_OFFS
 section .text
@@ -120,7 +131,7 @@ bits 32
 		mov eax, KERNEL_VMA_OFFS
 		shr eax, 21
 		and eax, 0x1FF
-		; insert the first page of the 3rd page directory
+		; insert the first page of the 3rd page directory pointing at LMA 0x0
 		mov dword [edx + eax * 8 - 1], 0x83
 
 		; enable PAE
@@ -146,18 +157,25 @@ bits 32
 
 		; enable write protect for testing page faults
 		mov edx, cr0
-		bts edx, 16 
+		bts edx, 16
 		mov cr0, edx
 
 		push ebx
 		push eax
-		; need to push an extra value for kernel_main's parameter to be right
+		; need to push an extra value for kernel_main's parameters to be right
 		; TODO will look into this later
 		push 0
 
+		lea ecx, [higher]
+		jmp ecx
+	higher:
+		; remove identity map of first 2 MiB
+		mov dword [kernel_PD0], 0
+		mov dword [kernel_PDP], 0
+		invlpg [0]
+
 		; jump to the kernel proper
 		extern kernel_main
-		lea ecx, [kernel_main]
-		jmp ecx
+		jmp kernel_main
 	halt: hlt
 	.end:

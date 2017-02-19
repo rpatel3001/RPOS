@@ -13,10 +13,10 @@ typedef struct IDT_entry {
 	uint8_t zero;
 	uint8_t type_attr;
 	uint16_t offset_higherbits;
-} IDT_entry;
+} __attribute__ ((packed)) IDT_entry;
 
 void idt_init();
-void load_idt(IDT_entry IDT[IDT_SIZE]);
+void add_isr(size_t vec, uintptr_t isr);
 
 bool is_interrupt_enabled(uint8_t interrupt);
 void enable_interrupt(uint8_t interrupt);
