@@ -55,12 +55,41 @@ section .bss
 		global IDT
 		IDT:
 			resq 256
+		IDT_end:
 
 section .data
+	; hardcode the GDT
+	global GDT
+	GDT:
+		; null selector
+		dq 0
+		; code selector 0x08
+		dw 0xFFFF ; limit 0:15
+		dw 0 ; base 0:15
+		db 0 ; base 16:23
+		db 0x9A ; access
+		db 0xCF ; flags + limit 16:19
+		db 0 ; base 24:31
+		; data selector 0x10
+		dw 0xFFFF; limit 0:15
+		dw 0 ; base 0:15
+		db 0 ; base 16:23
+		db 0x92 ; access
+		db 0xCF ; flags + limit 16:19
+		db 0 ; base 24:31
+	GDT_end:
+
+	; contents of the IDTR
 	global idt_ptr
 	idt_ptr:
-		dw 2047
+		dw IDT_end - IDT
 		dd IDT
+
+	; contents of the GDTR
+	global gdt_ptr
+	gdt_ptr:
+		dw GDT_end - GDT
+		dd GDT
 
 extern KERNEL_VMA_OFFS
 section .text
@@ -173,6 +202,16 @@ bits 32
 		mov dword [kernel_PD0], 0
 		mov dword [kernel_PDP], 0
 		invlpg [0]
+
+		lgdt [gdt_ptr]
+		jmp 0x08:flush_gdt
+	flush_gdt:
+		mov ax, 0x10
+	    mov ds, ax
+	    mov es, ax
+	    mov fs, ax
+	    mov gs, ax
+	    mov ss, ax
 
 		; jump to the kernel proper
 		extern kernel_main
