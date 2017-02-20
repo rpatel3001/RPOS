@@ -8,7 +8,6 @@
 #define PIC2_PORT 0xA0
 
 extern IDT_entry IDT[IDT_SIZE];
-extern DT_def idt_ptr;
 //initialize the IDT
 void idt_init() {
 	/* ICW1 - begin initialization */
@@ -35,8 +34,6 @@ void idt_init() {
 	/* mask interrupts */
 	write_port(PIC1_PORT + 1, 0xff);
 	write_port(PIC2_PORT + 1, 0xff);
-
-	asm_load_idt(&idt_ptr);
 
 	serial_writestring("PICs initialized\n");
 }

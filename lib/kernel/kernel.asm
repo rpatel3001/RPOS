@@ -8,14 +8,6 @@ asm_halt:
     hlt
     jmp asm_halt
 
-; load the idt
-global asm_load_idt:function
-asm_load_idt:
-    mov edx, [esp + 4]
-    lidt [edx]
-    sti
-    ret
-
 ; check if CPUID is supported
 global cpuid_supported:function
 cpuid_supported:

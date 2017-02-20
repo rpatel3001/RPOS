@@ -51,11 +51,6 @@ typedef struct multiboot_info {
 	uint16_t vbe_interface_len;
 }  __attribute__ ((packed))multiboot_info;
 
-typedef struct DT_def {
-	uint16_t size;
-	uint32_t ptr;
-} __attribute__ ((packed)) DT_def;
-
 //symbols from the linker script
 extern char KERNEL_END[];
 extern char KERNEL_VMA_OFFS[];
@@ -68,9 +63,6 @@ extern char kernel_PD0[];
 extern char kernel_PD1[];
 extern char kernel_PD2[];
 extern char kernel_PD3[];
-
-// load the ISR
-void asm_load_idt(void *idt_ptr);
 
 // check if cpuid is available
 bool cpuid_supported(void);

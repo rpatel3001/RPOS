@@ -203,6 +203,7 @@ bits 32
 		mov dword [kernel_PDP], 0
 		invlpg [0]
 
+		; load the new GDT
 		lgdt [gdt_ptr]
 		jmp 0x08:flush_gdt
 	flush_gdt:
@@ -212,6 +213,10 @@ bits 32
 	    mov fs, ax
 	    mov gs, ax
 	    mov ss, ax
+
+	    ; load the IDT
+	    lidt [idt_ptr]
+	    sti
 
 		; jump to the kernel proper
 		extern kernel_main
