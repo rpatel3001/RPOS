@@ -27,7 +27,7 @@ typedef struct multiboot_info {
 
 	bool mmap_present;
 	uint32_t mmap_len;
-	uint32_t* mmap_addr;
+	uintptr_t mmap_addr;
 
 	bool drives_present;
 	uint32_t drives_len;
@@ -49,7 +49,7 @@ typedef struct multiboot_info {
 	uint16_t vbe_interface_seg;
 	uint16_t vbe_interface_offs;
 	uint16_t vbe_interface_len;
-}  __attribute__ ((packed))multiboot_info;
+}  __attribute__ ((packed)) multiboot_info;
 
 //symbols from the linker script
 extern char KERNEL_END[];

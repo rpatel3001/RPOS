@@ -161,8 +161,16 @@ void read_mbi(uint32_t* ptr) {
 	if ((flags >> 6) & 1) {
 		mbi.mmap_present = true;
 		mbi.mmap_len = ptr[11];
-		mbi.mmap_addr = (uint32_t*)(ptr[12] + KERNEL_VMA_OFFS);
+		mbi.mmap_addr = (uintptr_t)(ptr[12] + KERNEL_VMA_OFFS);
 		serial_writestring("Memory map info present\n");
+		for (uintptr_t i = mbi.mmap_addr; i < mbi.mmap_addr + mbi.mmap_len;) {
+			uint32_t size = (*(uint32_t*)(i));
+			uint64_t base = (*(uint64_t*)(i+4));
+			uint64_t len = (*(uint64_t*)(i+12));
+			uint32_t type = (*(uint32_t*)(i+20));
+			uint32_t page = base >> 21;
+			i += *(uint32_t*)(i)+4;
+		}
 	}
 	if ((flags >> 7) & 1) {
 		mbi.drives_present = true;
