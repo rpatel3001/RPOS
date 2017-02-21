@@ -135,7 +135,7 @@ char key_to_char(key_press kp) {
 }
 
 // callback for when a key is pressed
-char linebuffer[VGA_WIDTH+1];
+char linebuffer[80];
 size_t line_index = 0;
 void kernel_handlechar(key_press kp) {
 	char outchar = key_to_char(kp);
@@ -224,7 +224,6 @@ void read_mbi(uint32_t* ptr) {
 		mbi.mmap_present = true;
 		mbi.mmap_len = ptr[11];
 		mbi.mmap_addr = (uintptr_t)(ptr[12] + KERNEL_VMA_OFFS);
-		serial_writestring("Memory map info present\n");
 		for (uintptr_t i = mbi.mmap_addr; i < mbi.mmap_addr + mbi.mmap_len;) {
 			uint32_t size = (*(uint32_t*)(i));
 			uint64_t base = (*(uint64_t*)(i+4));
@@ -235,6 +234,7 @@ void read_mbi(uint32_t* ptr) {
 			}
 			i += size+4;
 		}
+		serial_writestring("Loader memory map loaded\n");
 	}
 	if ((flags >> 7) & 1) {
 		mbi.drives_present = true;
@@ -261,14 +261,38 @@ void read_mbi(uint32_t* ptr) {
 	}
 	if ((flags >> 11) & 1) {
 		mbi.vbe_present = true;
-		mbi.vbe_control_info = ptr[18];
-		mbi.vbe_mode_info = ptr[19];
-		uint16_t* ptr1 = (uint16_t*)&ptr[19];
+		mbi.vbe_control_ptr = (vbe_control_info*)(ptr[18] + KERNEL_VMA_OFFS);
+		mbi.vbe_mode_ptr = (vbe_mode_info*)(ptr[19] + KERNEL_VMA_OFFS);
+		uint16_t* ptr1 = (uint16_t*)&ptr[19] + 2;
 		mbi.vbe_mode = ptr1[0];
 		mbi.vbe_interface_seg = ptr1[1];
 		mbi.vbe_interface_offs = ptr1[2];
 		mbi.vbe_interface_len = ptr1[3];
-		serial_writestring("VBE data present\n");
+
+		VGA_WIDTH = mbi.vbe_mode_ptr->x_res;
+		VGA_HEIGHT = mbi.vbe_mode_ptr->y_res;
+
+		// the pointers we get are as segment:offset; fix them to be logical addresses
+		uintptr_t ptr = (uintptr_t)mbi.vbe_control_ptr->oem_string;
+		mbi.vbe_control_ptr->oem_string = ((ptr >> 12) & 0xFFFF0) + (ptr & 0xFFFF) + KERNEL_VMA_OFFS;
+
+		ptr = (uintptr_t)mbi.vbe_control_ptr->oem_vendor_name;
+		mbi.vbe_control_ptr->oem_vendor_name = ((ptr >> 12) & 0xFFFF0) + (ptr & 0xFFFF) + KERNEL_VMA_OFFS;
+
+		ptr = (uintptr_t)mbi.vbe_control_ptr->oem_product_name;
+		mbi.vbe_control_ptr->oem_product_name = ((ptr >> 12) & 0xFFFF0) + (ptr & 0xFFFF) + KERNEL_VMA_OFFS;
+
+		ptr = (uintptr_t)mbi.vbe_control_ptr->oem_product_revision;
+		mbi.vbe_control_ptr->oem_product_revision = ((ptr >> 12) & 0xFFFF0) + (ptr & 0xFFFF) + KERNEL_VMA_OFFS;
+
+		serial_writestring("Video: ");
+		serial_writestring(mbi.vbe_control_ptr->oem_product_name);
+		serial_writestring(" ");
+		serial_writestring(mbi.vbe_control_ptr->oem_product_revision);
+		serial_putchar('\n');
+		serial_writestring("Video memory: ");
+		serial_writeint10(mbi.vbe_control_ptr->memory * 64 / 1024);
+		serial_writestring(" MiB\n");
 	}
 }
 

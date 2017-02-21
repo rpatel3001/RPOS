@@ -5,8 +5,7 @@
 #include <stddef.h>
 #include <kernel/kernel.h>
 
-#define VGA_WIDTH 80
-#define VGA_HEIGHT 25
+uint16_t VGA_WIDTH, VGA_HEIGHT;
 
 static uint16_t* VGA_BUFF = (uint16_t*)(0xB8000 + KERNEL_VMA_OFFS);
 
