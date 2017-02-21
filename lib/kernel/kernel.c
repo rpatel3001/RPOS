@@ -11,7 +11,68 @@
 #include <kernel/isr.h>
 #include <kernel/kernel.h>
 
+#define PAGE_SIZE (2*1024*1024)
+#define PAGE_BITMAP_LEN 64
+
+multiboot_info mbi;
+uint32_t page_bitmap[PAGE_BITMAP_LEN];
+
+size_t addr_to_page(uintptr_t addr) {
+	return addr >> 21;
+}
+
+uintptr_t page_to_addr(size_t page) {
+	return page << 21;
+}
+
+void mark_page_used(size_t page) {
+	page_bitmap[page / PAGE_BITMAP_LEN] |= 1 << (page & (PAGE_BITMAP_LEN - 1));
+}
+
+bool is_page_used(size_t page) {
+	return page_bitmap[page / PAGE_BITMAP_LEN] & (1 << ((page & (PAGE_BITMAP_LEN - 1))));
+}
+
+void mark_addr_range_used(uintptr_t addr, size_t len) {
+	while (addr < (uint64_t)addr + len) {
+		mark_page_used(addr_to_page(addr));
+		if (addr + PAGE_SIZE < addr) {
+			break;
+		} else {
+			addr += PAGE_SIZE;
+		}
+	}
+}
+
+void mark_page_available(size_t page) {
+	page_bitmap[page / PAGE_BITMAP_LEN] &= ~(1 << (page & (PAGE_BITMAP_LEN - 1)));
+}
+
+uintptr_t allocate_page() {
+	size_t page = 0;
+	while (!~page_bitmap[page / PAGE_BITMAP_LEN]) {
+		page += PAGE_BITMAP_LEN;
+	}
+	for (size_t i = 0; i < 32; ++i) {
+		if (page_bitmap[page / PAGE_BITMAP_LEN] & (1 << i)) {
+			++page;
+		} else {
+			break;
+		}
+	}
+	if (page_to_addr(page) > mbi.mem_upper * 1024 * 1024) {
+		abort("out of memory\n");
+	}
+
+	serial_writeint16(page);
+	serial_writestring(" page found\n");
+	mark_page_used(page);
+	return page_to_addr(page);
+}
+
 void shutdown(void) {
+	// this is a qemu hack
+	// TODO real shutdown with APM or ACPI or whatever
 	write_port(0xF4, 0);
 }
 
@@ -116,7 +177,6 @@ void kernel_handlechar(key_press kp) {
 	}
 }
 
-multiboot_info mbi;
 void read_mbi(uint32_t* ptr) {
 	uint32_t flags = ptr[0];
 	serial_writestring("Flags: ");
@@ -124,10 +184,12 @@ void read_mbi(uint32_t* ptr) {
 	serial_putchar('\n');
 	if (flags & 1) {
 		mbi.mem_present = true;
+		// in KiB
 		mbi.mem_lower = ptr[1];
-		mbi.mem_upper = ptr[2];
+		// in MiB
+		mbi.mem_upper = ptr[2] / 1024 + 1;
 		serial_writestring("Memory: ");
-		serial_writeint10(mbi.mem_upper / 1024 + 1);
+		serial_writeint10(mbi.mem_upper);
 		serial_writestring(" MiB\n");
 	}
 	if ((flags >> 1) & 1) {
@@ -168,8 +230,10 @@ void read_mbi(uint32_t* ptr) {
 			uint64_t base = (*(uint64_t*)(i+4));
 			uint64_t len = (*(uint64_t*)(i+12));
 			uint32_t type = (*(uint32_t*)(i+20));
-			uint32_t page = base >> 21;
-			i += *(uint32_t*)(i)+4;
+			if (type != 1) {
+				mark_addr_range_used(base, len);
+			}
+			i += size+4;
 		}
 	}
 	if ((flags >> 7) & 1) {
@@ -212,6 +276,9 @@ void kernel_main(uint32_t eax, uint32_t ebx) {
 	// initialize serial first because a lot of debugging stuff uses it
 	serial_init();
 	serial_writestring("\nBooting RPOS\n");
+
+	// mark the kernel's page as used
+	mark_addr_range_used((uintptr_t)KERNEL_LMA, KERNEL_END - KERNEL_VMA);
 
 	// do some checks to make sure we can fully boot
 	if (eax != 0x2BADB002) {
@@ -275,7 +342,7 @@ void kernel_main(uint32_t eax, uint32_t ebx) {
 	kb_init(&kernel_handlechar);
 
 	enable_interrupt(KEYBOARD_INT_VEC);
-	//enable_interrupt(PIT_INT_VEC);
+	enable_interrupt(PIT_INT_VEC);
 
 	while (true);
 }
