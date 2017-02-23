@@ -1,4 +1,5 @@
 #include <util.h>
+#include <serial.h>
 #include "isr.h"
 
 // divide by zero
@@ -82,6 +83,8 @@ void isr_0d(uint32_t err) {
 // page fault
 void isr_0e(uint32_t err) {
 	char* msg = "page fault\n";
+	serial_writeint16(get_cr2());
+	serial_writestring(" address\n");
 	abort_code(msg, err);
 }
 

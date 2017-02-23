@@ -19,6 +19,7 @@ uint16_t get_ds(void);
 uint16_t get_es(void);
 uint16_t get_fs(void);
 uint16_t get_gs(void);
+uint32_t get_cr2(void);
 
 // read/write bytes from/to cpu ports
 uint8_t read_port(uint16_t port);

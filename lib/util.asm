@@ -76,6 +76,11 @@ get_gs:
 	mov eax, gs
 	ret
 
+global get_cr2:function
+get_cr2:
+	mov eax, cr2
+	ret
+
 global read_port:function
 read_port:
 	mov edx, [esp + 4]

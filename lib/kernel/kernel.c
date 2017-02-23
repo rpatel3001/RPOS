@@ -15,7 +15,7 @@
 #define PAGE_BITMAP_LEN 64
 
 multiboot_info mbi;
-uint32_t page_bitmap[PAGE_BITMAP_LEN];
+uint32_t physical_page_bitmap[PAGE_BITMAP_LEN];
 
 size_t addr_to_page(uintptr_t addr) {
 	return addr >> 21;
@@ -26,11 +26,11 @@ uintptr_t page_to_addr(size_t page) {
 }
 
 void mark_page_used(size_t page) {
-	page_bitmap[page / PAGE_BITMAP_LEN] |= 1 << (page & (PAGE_BITMAP_LEN - 1));
+	physical_page_bitmap[page / PAGE_BITMAP_LEN] |= 1 << (page & (PAGE_BITMAP_LEN - 1));
 }
 
 bool is_page_used(size_t page) {
-	return page_bitmap[page / PAGE_BITMAP_LEN] & (1 << ((page & (PAGE_BITMAP_LEN - 1))));
+	return physical_page_bitmap[page / PAGE_BITMAP_LEN] & (1 << ((page & (PAGE_BITMAP_LEN - 1))));
 }
 
 void mark_addr_range_used(uintptr_t addr, size_t len) {
@@ -45,16 +45,16 @@ void mark_addr_range_used(uintptr_t addr, size_t len) {
 }
 
 void mark_page_available(size_t page) {
-	page_bitmap[page / PAGE_BITMAP_LEN] &= ~(1 << (page & (PAGE_BITMAP_LEN - 1)));
+	physical_page_bitmap[page / PAGE_BITMAP_LEN] &= ~(1 << (page & (PAGE_BITMAP_LEN - 1)));
 }
 
 uintptr_t allocate_page() {
 	size_t page = 0;
-	while (!~page_bitmap[page / PAGE_BITMAP_LEN]) {
+	while (!~physical_page_bitmap[page / PAGE_BITMAP_LEN]) {
 		page += PAGE_BITMAP_LEN;
 	}
 	for (size_t i = 0; i < 32; ++i) {
-		if (page_bitmap[page / PAGE_BITMAP_LEN] & (1 << i)) {
+		if (physical_page_bitmap[page / PAGE_BITMAP_LEN] & (1 << i)) {
 			++page;
 		} else {
 			break;
@@ -63,11 +63,12 @@ uintptr_t allocate_page() {
 	if (page_to_addr(page) > mbi.mem_upper * 1024 * 1024) {
 		abort("out of memory\n");
 	}
-
-	serial_writeint16(page);
-	serial_writestring(" page found\n");
 	mark_page_used(page);
 	return page_to_addr(page);
+}
+
+void free_page(uintptr_t addr) {
+	mark_page_available(addr_to_page(addr));
 }
 
 void shutdown(void) {
