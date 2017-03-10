@@ -9,67 +9,10 @@
 #include <kernel/interrupt.h>
 #include <timer.h>
 #include <kernel/isr.h>
-#include <kernel/kernel.h>
-
-#define PAGE_SIZE (2*1024*1024)
-#define PAGE_BITMAP_LEN 64
+#include <kernel/paging.h>
+#include "kernel.h"
 
 multiboot_info mbi;
-uint32_t physical_page_bitmap[PAGE_BITMAP_LEN];
-
-size_t addr_to_page(uintptr_t addr) {
-	return addr >> 21;
-}
-
-uintptr_t page_to_addr(size_t page) {
-	return page << 21;
-}
-
-void mark_page_used(size_t page) {
-	physical_page_bitmap[page / PAGE_BITMAP_LEN] |= 1 << (page & (PAGE_BITMAP_LEN - 1));
-}
-
-bool is_page_used(size_t page) {
-	return physical_page_bitmap[page / PAGE_BITMAP_LEN] & (1 << ((page & (PAGE_BITMAP_LEN - 1))));
-}
-
-void mark_addr_range_used(uintptr_t addr, size_t len) {
-	while (addr < (uint64_t)addr + len) {
-		mark_page_used(addr_to_page(addr));
-		if (addr + PAGE_SIZE < addr) {
-			break;
-		} else {
-			addr += PAGE_SIZE;
-		}
-	}
-}
-
-void mark_page_available(size_t page) {
-	physical_page_bitmap[page / PAGE_BITMAP_LEN] &= ~(1 << (page & (PAGE_BITMAP_LEN - 1)));
-}
-
-uintptr_t allocate_page() {
-	size_t page = 0;
-	while (!~physical_page_bitmap[page / PAGE_BITMAP_LEN]) {
-		page += PAGE_BITMAP_LEN;
-	}
-	for (size_t i = 0; i < 32; ++i) {
-		if (physical_page_bitmap[page / PAGE_BITMAP_LEN] & (1 << i)) {
-			++page;
-		} else {
-			break;
-		}
-	}
-	if (page_to_addr(page) > mbi.mem_upper * 1024 * 1024) {
-		abort("out of memory\n");
-	}
-	mark_page_used(page);
-	return page_to_addr(page);
-}
-
-void free_page(uintptr_t addr) {
-	mark_page_available(addr_to_page(addr));
-}
 
 void shutdown(void) {
 	// this is a qemu hack
@@ -167,7 +110,7 @@ void kernel_handlechar(key_press kp) {
 			linebuffer[line_index++] = outchar;
 		}
 		if (outchar == '\n' || line_index == VGA_WIDTH) {
-			serial_writestring(linebuffer);
+			serial_write(linebuffer, line_index);
 			// clear the line buffer
 			memset(linebuffer, 0, VGA_WIDTH);
 			if (line_index == VGA_WIDTH) {
@@ -178,9 +121,13 @@ void kernel_handlechar(key_press kp) {
 	}
 }
 
+uint32_t memsize_mb(void) {
+	return mbi.mem_upper / 1024 + 1;
+}
+
 void read_mbi(uint32_t* ptr) {
 	uint32_t flags = ptr[0];
-	serial_writestring("Flags: ");
+	serial_writestring("Multiboot Flags: ");
 	serial_writeint16(flags);
 	serial_putchar('\n');
 	if (flags & 1) {
@@ -188,9 +135,9 @@ void read_mbi(uint32_t* ptr) {
 		// in KiB
 		mbi.mem_lower = ptr[1];
 		// in MiB
-		mbi.mem_upper = ptr[2] / 1024 + 1;
+		mbi.mem_upper = ptr[2];
 		serial_writestring("Memory: ");
-		serial_writeint10(mbi.mem_upper);
+		serial_writeint10(memsize_mb());
 		serial_writestring(" MiB\n");
 	}
 	if ((flags >> 1) & 1) {

@@ -108,17 +108,12 @@ extern char KERNEL_VMA_OFFS[];
 extern char KERNEL_LMA[];
 extern char KERNEL_VMA[];
 
-//kernel page tables
-extern char kernel_PDP[];
-extern char kernel_PD0[];
-extern char kernel_PD1[];
-extern char kernel_PD2[];
-extern char kernel_PD3[];
-
 // check if cpuid is available
 bool cpuid_supported(void);
 
 // halt forever
 void asm_halt(void);
+
+uint32_t memsize_mb(void);
 
 #endif
