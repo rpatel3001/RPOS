@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
-#include <util.h>
+#include <kernel/util.h>
 #include "terminal.h"
 
 #define VGA_PORT 0x3D4

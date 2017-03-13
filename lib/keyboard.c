@@ -1,6 +1,6 @@
 #include <string.h>
 #include <serial.h>
-#include <util.h>
+#include <kernel/util.h>
 #include "keyboard_scancodes.h"
 #include "keyboard.h"
 

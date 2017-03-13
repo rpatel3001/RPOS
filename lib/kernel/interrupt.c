@@ -1,7 +1,5 @@
 #include <serial.h>
-#include <util.h>
-#include <string.h>
-#include <kernel/kernel.h>
+#include <kernel/util.h>
 #include "interrupt.h"
 
 #define PIC1_PORT 0x20

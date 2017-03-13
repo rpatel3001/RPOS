@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 // struct to represent a keypress event
-typedef struct key_press {
+typedef struct {
 	bool shift;
 	bool control;
 	bool alt;

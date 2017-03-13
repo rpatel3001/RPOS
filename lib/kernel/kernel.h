@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef struct vbe_control_info {
+typedef struct {
 	char sig[4];
 	uint16_t version;
 	char* oem_string;
@@ -19,7 +19,7 @@ typedef struct vbe_control_info {
 	uint8_t oem_data[256];
 }  __attribute__ ((packed))vbe_control_info;
 
-typedef struct vbe_mode_info {
+typedef struct {
 	uint16_t mode_attr;
 	uint8_t win_a_attr;
 	uint8_t win_b_attr;
@@ -55,7 +55,7 @@ typedef struct vbe_mode_info {
 	// TODO fill in the rest
 }  __attribute__ ((packed))vbe_mode_info;
 
-typedef struct multiboot_info {
+typedef struct {
 	bool mem_present;
 	uint32_t mem_lower;
 	uint32_t mem_upper;

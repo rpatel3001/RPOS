@@ -5,12 +5,12 @@
 #include <terminal.h>
 #include <serial.h>
 #include <string.h>
-#include <util.h>
+#include <kernel/util.h>
 #include <kernel/interrupt.h>
 #include <timer.h>
 #include <kernel/isr.h>
 #include <kernel/paging.h>
-#include "kernel.h"
+#include <kernel/kernel.h>
 
 multiboot_info mbi;
 

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct isr_stack_frame {
+typedef struct {
     unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
     unsigned int int_no, err;    /* our 'push byte #' and ecodes do this */
     unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 

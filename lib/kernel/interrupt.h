@@ -3,11 +3,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #define IDT_SIZE 256
 #define INTERRUPT_OFFSET 0x20
 
-typedef struct IDT_entry {
+typedef struct {
 	uint16_t offset_lowerbits;
 	uint16_t selector;
 	uint8_t zero;
