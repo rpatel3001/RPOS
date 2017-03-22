@@ -1,6 +1,7 @@
 #include "heap.h"
 #include <kernel/paging.h>
 #include <kernel/util.h>
+#include <stdbool.h>
 
 #define HEAD_MAGIC 0x4EADBEEF
 #define FOOT_MAGIC 0xF007BEEF
@@ -37,20 +38,36 @@ void remove_index(heap_header* val) {
 	}
 }
 
-void heap_init(void) {
-	holes = (heap_header*)allocate_page();
-	holes->magic = HEAD_MAGIC;
-	holes->size = PAGE_SIZE;
-	holes->is_hole = true;
-	holes->next = 0;
+void init_hole(heap_header* addr, uint32_t size) {
+	addr->magic = HEAD_MAGIC;
+	addr->size = size;
+	addr->is_hole = true;
+	addr->next = 0;
 
-	heap_footer* footer = (heap_footer*)(holes + PAGE_SIZE - sizeof(heap_footer));
+	heap_footer* footer = (heap_footer*)(addr + size - sizeof(heap_footer));
 	footer->magic = FOOT_MAGIC;
-	footer->header = holes;
+	footer->header = addr;
 }
 
 void* kmalloc(uint32_t size) {
-	
+	if (size > PAGE_SIZE) {
+		abort_code("tried to malloc too much memory", size);
+	}
+	heap_header* ptr = holes;
+	while(ptr) {
+		if (ptr->size - (sizeof(heap_header) + sizeof(heap_footer)) >= size) {
+			remove_index(ptr);
+			ptr->is_hole = false;
+			return ptr + sizeof(heap_header);
+		} else {
+			ptr = ptr->next;
+		}
+	}
+	ptr = (heap_header*)allocate_page();
+	init_hole(ptr, PAGE_SIZE);
+	ptr->next = holes;
+	holes = ptr;
+	return ptr + sizeof(heap_header);
 }
 
 void kfree(void* ptr) {
