@@ -12,7 +12,7 @@ extern char kernel_PD1[];
 extern char kernel_PD2[];
 extern char kernel_PD3[];
 
-#define PAGE_SIZE (2*1024*1024)
+#define PAGE_SIZE (2*1024*1024) // in bytes
 #define PAGE_BITMAP_LEN 64
 
 size_t addr_to_page(uintptr_t addr);
