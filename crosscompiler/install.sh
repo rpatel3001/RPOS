@@ -7,7 +7,7 @@ export PATH="$PREFIX/bin:$PATH"
 
 mkdir build-binutils
 cd build-binutils
-../binutils-x.y.z/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot 
+../binutils-gdb/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot 
 --disable-nls --disable-werror
 make
 make install
@@ -15,7 +15,7 @@ make install
 cd ..
 mkdir build-gcc
 cd build-gcc
-../gcc-x.y.z/configure --target=$TARGET --prefix="$PREFIX" --disable-nls 
+../gcc/configure --target=$TARGET --prefix="$PREFIX" --disable-nls 
 --enable-languages=c,c++ --without-headers
 make all-gcc
 make all-target-libgcc
