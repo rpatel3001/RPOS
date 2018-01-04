@@ -70,6 +70,11 @@ asm_isr_08:
 	push 0x08
 	jmp asm_handle_interrupt
 
+global asm_isr_09:function
+asm_isr_09:
+	push 0x09
+	jmp asm_handle_interrupt
+
 global asm_isr_0a:function
 asm_isr_0a:
 	push 0x0a

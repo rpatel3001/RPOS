@@ -4,9 +4,6 @@
 #include "keyboard_scancodes.h"
 #include "keyboard.h"
 
-#define KEYBOARD_DATA_PORT 0x60
-#define KEYBOARD_STATUS_PORT 0x64
-
 void (*callback)(key_press);
 
 static const key_press invalid_keypress = {false, false, false, false, false, 0};

@@ -20,6 +20,10 @@ void shutdown(void) {
 	write_port(0xF4, 0);
 }
 
+void reboot(void) {
+	write_port(KEYBOARD_STATUS_PORT, 0xFE);
+}
+
 void handle_interrupt(isr_stack_frame *s) {
 	if (s->int_no < 0x20) {
 		serial_writeint16(s->int_no);
@@ -43,6 +47,8 @@ void handle_interrupt(isr_stack_frame *s) {
 		isr_07();
 	} else if (s->int_no == 0x08) {
 		isr_08(s->err);
+	} else if (s->int_no == 0x09) {
+		isr_09();
 	} else if (s->int_no == 0x0a) {
 		isr_0a(s->err);
 	} else if (s->int_no == 0x0b) {
@@ -90,6 +96,10 @@ void kernel_handlechar(key_press kp) {
 		// shutdown on ctrl + s
 		serial_writestring("Shutdown signal received!\n");
 		shutdown();
+	} else if (outchar == 'r' && kp.control) {
+		// reboot on ctrl + r
+		serial_writestring("Reboot signal received!\n");
+		reboot();
 	} else if (outchar == 'c' && kp.control) {
 		// clear the screen on ctrl + c
 		terminal_putchar('\f');
@@ -293,6 +303,7 @@ void kernel_main(uint32_t eax, uint32_t ebx) {
 	add_isr(0x06, (uintptr_t)asm_isr_06);
 	add_isr(0x07, (uintptr_t)asm_isr_07);
 	add_isr(0x08, (uintptr_t)asm_isr_08);
+	add_isr(0x09, (uintptr_t)asm_isr_09);
 	add_isr(0x0a, (uintptr_t)asm_isr_0a);
 	add_isr(0x0b, (uintptr_t)asm_isr_0b);
 	add_isr(0x0c, (uintptr_t)asm_isr_0c);

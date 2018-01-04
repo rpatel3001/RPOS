@@ -56,6 +56,12 @@ void isr_08(uint32_t err) {
 	abort_code(msg, err);
 }
 
+// coprocessor segment overrun
+void isr_09(void) {
+	char* msg = "coprocessor segment overrun\n";
+	abort(msg);
+}
+
 // invalid TSS
 void isr_0a(uint32_t err) {
 	char* msg = "invalid TSS\n";
