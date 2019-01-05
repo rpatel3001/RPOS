@@ -40,6 +40,9 @@ includes:
 boot:
 	$(QEMU)
 
+boot-gdb:
+	$(QEMU) -s -S 
+
 clean:
 	-rm -rf build
 
