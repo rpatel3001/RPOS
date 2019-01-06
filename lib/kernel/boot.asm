@@ -189,6 +189,8 @@ bits 32
 		bts edx, 16
 		mov cr0, edx
 
+		mov word ecx, [0x40e]
+		push ecx
 		push ebx
 		push eax
 		; need to push an extra value for kernel_main's parameters to be right

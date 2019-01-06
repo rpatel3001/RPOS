@@ -254,7 +254,7 @@ void read_mbi(uint32_t* ptr) {
 	}
 }
 
-void kernel_main(uint32_t eax, uint32_t ebx) {
+void kernel_main(uint32_t eax, uint32_t ebx, uint16_t ecx) {
 	// initialize serial first because a lot of debugging stuff uses it
 	serial_init();
 	serial_writestring("\nBooting RPOS\n");
@@ -292,6 +292,11 @@ void kernel_main(uint32_t eax, uint32_t ebx) {
 	terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	terminal_init();
 	serial_writestring("Terminal Initialized\n");
+
+
+	serial_writestring("EBDA: ");
+	serial_writeint10(*(int16_t*)(ecx<<4));
+	serial_putchar('\n');
 
 	// enable ISRs
 	add_isr(0x00, (uintptr_t)asm_isr_00);
